@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 using namespace std;
+#define RUNTIME 10
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -20,11 +21,13 @@ void sequentialRead(int fd, int chunk_size) {
     char* buffer = (char *) aligned_alloc(1024, 1024 * chunk_size);
     double start = gettime();
     uint64_t ops = 0;
-    while (gettime() - start < 10) {
+    while (gettime() - start < RUNTIME) {
         read(fd, buffer, 1024 * chunk_size);
         ops++;
     }
-    cout << ((ops * 1024 * chunk_size)/(1024.0*1024*1024*10)) << " GB/s" << endl;
+    cout << "Chunk size: " << chunk_size << endl;
+    cout << "Number of ops: " << ops << endl;
+    cout << "Throughput: " << ((ops * 1024 * chunk_size)/(1024.0*1024*1024 * RUNTIME)) << " GB/s" << endl << endl;
 }
 
 int main(int argc, char const *argv[])
