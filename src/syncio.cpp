@@ -26,6 +26,7 @@ struct RuntimeArgs_t {
     int fd;
     int blk_size;
     int runtime;
+    bool debug;
 };
 
 double sequentialRead(const RuntimeArgs_t& args) {
@@ -42,7 +43,7 @@ double sequentialRead(const RuntimeArgs_t& args) {
     stats << "TID:" << args.thread_id
         << " bsize: " << args.blk_size << "kB"
         << " ops: " << throughput << " GB/s" << endl;
-    cout << stats.str();
+    if (args.debug) cout << stats.str();
     return throughput;
 }
 
@@ -56,11 +57,13 @@ int main(int argc, char const *argv[])
     int blockSize = 16;
     int threadCount = 1;
     int runtime = 1;
+    bool debug = false;
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0) {filename = argv[i+1];}
         if (strcmp(argv[i], "-blk") == 0) {blockSize = atoi(argv[i+1]);}
         if (strcmp(argv[i], "-t") == 0) {threadCount = atoi(argv[i+1]);}
         if (strcmp(argv[i], "-rt") == 0) {runtime = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "-d") == 0) {debug = true;}
     }
 
     int fd;
@@ -78,6 +81,7 @@ int main(int argc, char const *argv[])
         args.blk_size = blockSize;
         args.fd = fd;
         args.runtime = runtime;
+        args.debug = debug;
         threads.push_back(std::async(sequentialRead, args));
     }
 
