@@ -29,12 +29,16 @@ struct RuntimeArgs_t {
     bool debug;
 };
 
-double sequentialRead(const RuntimeArgs_t& args) {
+double syncioSequentialRead(const RuntimeArgs_t& args) {
     char* buffer = (char *) aligned_alloc(1024, 1024 * args.blk_size);
     double start = gettime();
     uint64_t ops = 0;
     while (gettime() - start < args.runtime) {
-        read(args.fd, buffer, 1024 * args.blk_size);
+        ssize_t readCount = read(args.fd, buffer, 1024 * args.blk_size);
+        if (readCount < 0) {
+            perror("Read error");
+            return -1;
+        }
         ops++;
     }
     double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
@@ -50,7 +54,7 @@ double sequentialRead(const RuntimeArgs_t& args) {
 int main(int argc, char const *argv[])
 {
     if (argc < 3 ) {
-        cout << "Usage: syncio -f <file> -t <threads> -rt <runtime> -blk <block_size_kB>" << endl;
+        cout << "Usage: syncio -f <file> -t <threads> -rt <runtime> -blk <block_size_kB> -d(enables debuginfo)" << endl;
         exit(1);
     }
     const char* filename;
@@ -82,7 +86,7 @@ int main(int argc, char const *argv[])
         args.fd = fd;
         args.runtime = runtime;
         args.debug = debug;
-        threads.push_back(std::async(sequentialRead, args));
+        threads.push_back(std::async(syncioSequentialRead, args));
     }
 
     double aggregateStats = 0;
