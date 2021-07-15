@@ -16,13 +16,15 @@ static inline double gettime(void) {
   return ((double)now_tv.tv_sec) + ((double)now_tv.tv_usec)/1000000.0;
 }
 
-void sequentialRead(int fd) {
-    char* buffer = (char *) aligned_alloc(1024, 1024*16);
+void sequentialRead(int fd, int chunk_size) {
+    char* buffer = (char *) aligned_alloc(1024, 1024 * chunk_size);
     double start = gettime();
-    while (gettime() - start < 1) {
-        ssize_t rsize = read(fd, buffer, 1024*16);
-        cout << rsize << std::endl;
+    uint64_t ops = 0;
+    while (gettime() - start < 10) {
+        read(fd, buffer, 1024 * chunk_size);
+        ops++;
     }
+    cout << ((ops * 1024 * chunk_size)/(1024.0*1024*1024*10)) << " GB/s" << endl;
 }
 
 int main(int argc, char const *argv[])
@@ -35,7 +37,6 @@ int main(int argc, char const *argv[])
         perror("Open error");
         return -1;
     }
-    cout << fd << std::endl;
-    sequentialRead(fd);
+    sequentialRead(fd, 16);
     return 0;
 }
