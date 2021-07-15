@@ -25,7 +25,7 @@ void sequentialRead(int fd, int chunk_size) {
         read(fd, buffer, 1024 * chunk_size);
         ops++;
     }
-    cout << "Chunk size: " << chunk_size << endl;
+    cout << "Chunk size: " << chunk_size << "kB" << endl;
     cout << "Number of ops: " << ops << endl;
     cout << "Throughput: " << ((ops * 1024 * chunk_size)/(1024.0*1024*1024 * RUNTIME)) << " GB/s" << endl << endl;
 }
@@ -45,5 +45,6 @@ int main(int argc, char const *argv[])
     sequentialRead(fd, 64);
     sequentialRead(fd, 1024);
     sequentialRead(fd, 2048);
+    sequentialRead(fd, 4096);
     return 0;
 }
