@@ -25,17 +25,18 @@ struct RuntimeArgs_t {
     int thread_id;
     int fd;
     int blk_size;
+    int runtime;
 };
 
 double sequentialRead(const RuntimeArgs_t& args) {
     char* buffer = (char *) aligned_alloc(1024, 1024 * args.blk_size);
     double start = gettime();
     uint64_t ops = 0;
-    while (gettime() - start < RUNTIME) {
+    while (gettime() - start < args.runtime) {
         read(args.fd, buffer, 1024 * args.blk_size);
         ops++;
     }
-    double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * RUNTIME));
+    double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
 
     std::stringstream stats;
     stats << "TID:" << args.thread_id
@@ -47,13 +48,20 @@ double sequentialRead(const RuntimeArgs_t& args) {
 
 int main(int argc, char const *argv[])
 {
-    if (argc <3 ) {
-        cout << "Usage: syncio <file_name> <block_size_kB> <thread_count>" << endl;
+    if (argc < 3 ) {
+        cout << "Usage: syncio -f <file> -t <threads> -rt <runtime> -blk <block_size_kB>" << endl;
         exit(1);
     }
-    const char* filename = argv[1];
-    const int blockSize = atoi(argv[2]);
-    const int threadCount = atoi(argv[3]);
+    const char* filename;
+    int blockSize = 16;
+    int threadCount = 1;
+    int runtime = 1;
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-f") == 0) {filename = argv[i+1];}
+        if (strcmp(argv[i], "-blk") == 0) {blockSize = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "-t") == 0) {threadCount = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "-rt") == 0) {runtime = atoi(argv[i+1]);}
+    }
 
     int fd;
 
@@ -69,6 +77,7 @@ int main(int argc, char const *argv[])
         args.thread_id = i;
         args.blk_size = blockSize;
         args.fd = fd;
+        args.runtime = runtime;
         threads.push_back(std::async(sequentialRead, args));
     }
 
