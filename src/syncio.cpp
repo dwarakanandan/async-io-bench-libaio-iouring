@@ -10,6 +10,7 @@
 #include <thread>
 #include <vector>
 #include <sstream>
+#include <future>
 
 using namespace std;
 #define RUNTIME 1
@@ -26,7 +27,7 @@ struct RuntimeArgs_t {
     int blk_size;
 };
 
-void sequentialRead(const RuntimeArgs_t& args) {
+double sequentialRead(const RuntimeArgs_t& args) {
     char* buffer = (char *) aligned_alloc(1024, 1024 * args.blk_size);
     double start = gettime();
     uint64_t ops = 0;
@@ -41,6 +42,7 @@ void sequentialRead(const RuntimeArgs_t& args) {
         << " bsize: " << args.blk_size << "kB"
         << " ops: " << throughput << " GB/s" << endl;
     cout << stats.str();
+    return throughput;
 }
 
 int main(int argc, char const *argv[])
@@ -61,17 +63,20 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    std::vector<std::thread> threads;
+    std::vector<std::future<double>> threads;
     for (int i = 0; i < threadCount; ++i) {
         RuntimeArgs_t args;
         args.thread_id = i;
         args.blk_size = blockSize;
         args.fd = fd;
-        threads.push_back(std::thread(sequentialRead, args));
+        threads.push_back(std::async(sequentialRead, args));
     }
 
+    double aggregateStats = 0;
     for (auto& t : threads) {
-        t.join();
+        aggregateStats += t.get();
     }
+
+    cout << "Total throughput = " << aggregateStats << " GB/s" << endl;
     return 0;
 }
