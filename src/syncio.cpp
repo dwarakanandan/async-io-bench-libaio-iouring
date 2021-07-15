@@ -46,5 +46,6 @@ int main(int argc, char const *argv[])
     sequentialRead(fd, 1024);
     sequentialRead(fd, 2048);
     sequentialRead(fd, 4096);
+    sequentialRead(fd, 16384);
     return 0;
 }
