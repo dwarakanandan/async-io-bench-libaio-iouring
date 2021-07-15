@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <thread>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 #define RUNTIME 1
@@ -35,9 +36,11 @@ void sequentialRead(const RuntimeArgs_t& args) {
     }
     double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * RUNTIME));
 
-    cout << "TID:" << args.thread_id
+    std::stringstream stats;
+    stats << "TID:" << args.thread_id
         << " bsize: " << args.blk_size << "kB"
         << " ops: " << throughput << " GB/s" << endl;
+    cout << stats.str();
 }
 
 int main(int argc, char const *argv[])
