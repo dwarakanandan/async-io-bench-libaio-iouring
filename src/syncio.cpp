@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 using namespace std;
-#define RUNTIME 1
+#define RUNTIME 5
 
 static inline double gettime(void) {
   struct timeval now_tv;
