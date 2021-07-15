@@ -1,6 +1,6 @@
 CC = g++
 
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -pthread
 
 SOURCE = syncio
 

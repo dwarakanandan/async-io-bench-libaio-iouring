@@ -7,6 +7,8 @@
 #include <sys/time.h>
 #include <iostream>
 #include <unistd.h>
+#include <thread>
+#include <vector>
 
 using namespace std;
 #define RUNTIME 1
@@ -17,22 +19,37 @@ static inline double gettime(void) {
   return ((double)now_tv.tv_sec) + ((double)now_tv.tv_usec)/1000000.0;
 }
 
-void sequentialRead(int fd, int chunk_size) {
-    char* buffer = (char *) aligned_alloc(1024, 1024 * chunk_size);
+struct RuntimeArgs_t {
+    int thread_id;
+    int fd;
+    int blk_size;
+};
+
+void sequentialRead(const RuntimeArgs_t& args) {
+    char* buffer = (char *) aligned_alloc(1024, 1024 * args.blk_size);
     double start = gettime();
     uint64_t ops = 0;
     while (gettime() - start < RUNTIME) {
-        read(fd, buffer, 1024 * chunk_size);
+        read(args.fd, buffer, 1024 * args.blk_size);
         ops++;
     }
-    cout << "Chunk size: " << chunk_size << "kB" << endl;
-    cout << "Number of ops: " << ops << endl;
-    cout << "Throughput: " << ((ops * 1024 * chunk_size)/(1024.0*1024*1024 * RUNTIME)) << " GB/s" << endl << endl;
+    double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * RUNTIME));
+
+    cout << "TID:" << args.thread_id
+        << " bsize: " << args.blk_size << "kB"
+        << " ops: " << throughput << " GB/s" << endl;
 }
 
 int main(int argc, char const *argv[])
 {
+    if (argc <3 ) {
+        cout << "Usage: syncio <file_name> <block_size_kB> <thread_count>" << endl;
+        exit(1);
+    }
     const char* filename = argv[1];
+    const int blockSize = atoi(argv[2]);
+    const int threadCount = atoi(argv[3]);
+
     int fd;
 
     fd = open(filename, O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
@@ -40,12 +57,18 @@ int main(int argc, char const *argv[])
         perror("Open error");
         return -1;
     }
-    sequentialRead(fd, 2);
-    sequentialRead(fd, 16);
-    sequentialRead(fd, 64);
-    sequentialRead(fd, 1024);
-    sequentialRead(fd, 2048);
-    sequentialRead(fd, 4096);
-    sequentialRead(fd, 16384);
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < threadCount; ++i) {
+        RuntimeArgs_t args;
+        args.thread_id = i;
+        args.blk_size = blockSize;
+        args.fd = fd;
+        threads.push_back(std::thread(sequentialRead, args));
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
     return 0;
 }
