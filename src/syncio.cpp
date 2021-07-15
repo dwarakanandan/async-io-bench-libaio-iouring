@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
@@ -16,10 +17,10 @@ static inline double gettime(void) {
 }
 
 void sequentialRead(int fd) {
-    char buffer[1024*16];
+    char* buffer = (char *) aligned_alloc(1024, 1024*16);
     double start = gettime();
     while (gettime() - start < 1) {
-        size_t rsize = read(fd, buffer, 1024*16);
+        ssize_t rsize = read(fd, buffer, 1024*16);
         cout << rsize << std::endl;
     }
 }
@@ -34,6 +35,7 @@ int main(int argc, char const *argv[])
         perror("Open error");
         return -1;
     }
+    cout << fd << std::endl;
     sequentialRead(fd);
     return 0;
 }
