@@ -31,9 +31,12 @@ struct RuntimeArgs_t {
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
     off_t initialOffset = _100G * args.thread_id;
+    
     std::stringstream rstats;
     rstats << "TID:" << args.thread_id
         << " read_offset: " << initialOffset << " bytes" << endl;
+    if (args.debug) cout << rstats.str();
+
     size_t page_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, page_size);
     double start = gettime();
