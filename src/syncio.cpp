@@ -137,9 +137,11 @@ void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* op
         totalThroughput += t.get();
     }
     if (strcmp(mode, SEQUENTIAL) == 0) {
-        cout << operation << " " << SEQUENTIAL << " Block-size: " << _100MB/(1024) << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
+        cout << operation << " " << SEQUENTIAL << " BLK_SIZE: " << _100MB/(1024) <<
+            " kB   Throughput = " << totalThroughput << " GB/s" << endl;
     } else {
-        cout << operation << " " << RANDOM << " Block-size: " << userArgs.blk_size << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
+        cout << operation << " " << RANDOM << " BLK_SIZE: " << userArgs.blk_size <<
+            " kB   Throughput = " << totalThroughput << " GB/s" << endl;
     }
 }
 
@@ -172,8 +174,10 @@ int main(int argc, char const *argv[])
     }
 
     runBenchmark(args, threadCount, READ, SEQUENTIAL);
-    runBenchmark(args, threadCount, READ, RANDOM);
     runBenchmark(args, threadCount, WRITE, SEQUENTIAL);
+
+    runBenchmark(args, threadCount, READ, RANDOM);
     runBenchmark(args, threadCount, WRITE, RANDOM);
+
     return 0;
 }
