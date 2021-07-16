@@ -34,6 +34,7 @@ static inline double gettime(void) {
 
 struct RuntimeArgs_t {
     int thread_id;
+    int thread_count;
     int fd;
     int blk_size;
     off_t read_offset;
@@ -74,17 +75,15 @@ void syncioWrite(double start, int fd, char* buffer, size_t buffer_size, off_t o
 }
 
 double syncio(const RuntimeArgs_t& args) {
-    size_t buffer_size;
+    size_t buffer_size = 1024 * args.blk_size;;
     uint64_t ops = 0;
     off_t offsets[MAX_OPS];
     
     if (strcmp(args.opmode, SEQUENTIAL) == 0) {
-        buffer_size  = _100MB;
         for(int i=0; i < MAX_OPS; i++) {
             offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
         }
     } else {
-        buffer_size  = 1024 * args.blk_size;
         for(int i=0; i < MAX_OPS; i++) {
             offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
         }
@@ -105,12 +104,12 @@ double syncio(const RuntimeArgs_t& args) {
     return throughput;
 }
 
-void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* operation, const char* mode) {
+void runBenchmark(const RuntimeArgs_t& userArgs, const char* operation, const char* mode) {
     std::vector<std::future<double>> threads;
-    for (int i = 0; i < threadCount; ++i) {
+    for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
         args.thread_id = i;
-        args.blk_size = userArgs.blk_size;
+        args.blk_size = (strcmp(mode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
@@ -122,13 +121,8 @@ void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* op
     for (auto& t : threads) {
         totalThroughput += t.get();
     }
-    if (strcmp(mode, SEQUENTIAL) == 0) {
-        cout << operation << " " << SEQUENTIAL << " BLK_SIZE: " << _100MB/(1024) <<
+    cout << operation << " " <<  mode << " BLK_SIZE: " << userArgs.blk_size <<
             " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
-    } else {
-        cout << operation << " " << RANDOM << " BLK_SIZE: " << userArgs.blk_size <<
-            " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
-    }
 }
 
 int main(int argc, char const *argv[])
@@ -141,15 +135,15 @@ int main(int argc, char const *argv[])
     srand(time(NULL));
 
     const char* filename;
-    int threadCount = 1;
     RuntimeArgs_t args;
+    args.thread_count = 1;
     args.blk_size = 16;
     args.debugInfo = false;
     
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0) {filename = argv[i+1];}
         if (strcmp(argv[i], "-blk") == 0) {args.blk_size = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "-t") == 0) {threadCount = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "-t") == 0) {args.thread_count = atoi(argv[i+1]);}
         if (strcmp(argv[i], "-d") == 0) {args.debugInfo = true;}
     }
 
@@ -159,11 +153,11 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    runBenchmark(args, threadCount, READ, SEQUENTIAL);
-    runBenchmark(args, threadCount, WRITE, SEQUENTIAL);
+    runBenchmark(args, READ, SEQUENTIAL);
+    runBenchmark(args, WRITE, SEQUENTIAL);
 
-    runBenchmark(args, threadCount, READ, RANDOM);
-    runBenchmark(args, threadCount, WRITE, RANDOM);
+    runBenchmark(args, READ, RANDOM);
+    runBenchmark(args, WRITE, RANDOM);
 
     return 0;
 }
