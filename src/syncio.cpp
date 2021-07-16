@@ -105,12 +105,12 @@ double syncio(const RuntimeArgs_t& args) {
 }
 
 void runBenchmark(RuntimeArgs_t& userArgs, const char* operation, const char* mode) {
-    userArgs.blk_size = (strcmp(mode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
+    int blk_size = (strcmp(mode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
     std::vector<std::future<double>> threads;
     for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
         args.thread_id = i;
-        args.blk_size = (strcmp(mode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
+        args.blk_size = blk_size;
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
@@ -122,7 +122,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, const char* operation, const char* mo
     for (auto& t : threads) {
         totalThroughput += t.get();
     }
-    cout << operation << " " <<  mode << " BLK_SIZE: " << userArgs.blk_size <<
+    cout << operation << " " <<  mode << " BLK_SIZE: " << blk_size <<
             " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
 }
 
