@@ -34,7 +34,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
 
     std::stringstream rstats;
     rstats << "TID:" << args.thread_id
-        << " read_offset: " << initialOffset << " bytes" << endl;
+        << " read_offset: " << initialOffset / _100GB << " GB" << endl;
     if (args.debug) cout << rstats.str();
 
     size_t page_size  = 1024 * args.blk_size;
