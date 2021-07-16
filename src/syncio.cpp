@@ -104,8 +104,8 @@ double syncio(const RuntimeArgs_t& args) {
     return throughput;
 }
 
-void runBenchmark(RuntimeArgs_t& userArgs, const char* operation, const char* mode) {
-    int blk_size = (strcmp(mode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
+void runBenchmark(RuntimeArgs_t& userArgs) {
+    int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
     std::vector<std::future<double>> threads;
     for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
@@ -114,22 +114,22 @@ void runBenchmark(RuntimeArgs_t& userArgs, const char* operation, const char* mo
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
-        args.operation = operation;
-        args.opmode = mode;
+        args.operation = userArgs.operation;
+        args.opmode = userArgs.opmode;
         threads.push_back(std::async(syncio, args));
     }
     double totalThroughput = 0;
     for (auto& t : threads) {
         totalThroughput += t.get();
     }
-    cout << operation << " " <<  mode << " BLK_SIZE: " << blk_size <<
+    cout << userArgs.operation << " " <<  userArgs.opmode << " BLK_SIZE: " << blk_size <<
             " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
 }
 
 int main(int argc, char const *argv[])
 {
     if (argc < 3 ) {
-        cout << "syncio --file <file> --threads <threads> --bsize <block_size_kB> --debug(enables debuginfo)" << endl;
+        cout << "syncio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
         exit(1);
     }
 
@@ -145,6 +145,8 @@ int main(int argc, char const *argv[])
         if (strcmp(argv[i], "--file") == 0) {filename = argv[i+1];}
         if (strcmp(argv[i], "--bsize") == 0) {args.blk_size = atoi(argv[i+1]);}
         if (strcmp(argv[i], "--threads") == 0) {args.thread_count = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "--op") == 0) {args.operation = strcmp(argv[i+1], "r") == 0 ? READ: WRITE;}
+        if (strcmp(argv[i], "--mode") == 0) {args.opmode = strcmp(argv[i+1], "s") == 0 ? SEQUENTIAL: RANDOM;}
         if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
     }
 
@@ -154,11 +156,7 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    runBenchmark(args, READ, SEQUENTIAL);
-    runBenchmark(args, WRITE, SEQUENTIAL);
-
-    runBenchmark(args, READ, RANDOM);
-    runBenchmark(args, WRITE, RANDOM);
+    runBenchmark(args);
 
     return 0;
 }
