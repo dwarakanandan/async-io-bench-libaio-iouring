@@ -13,7 +13,7 @@
 #include <future>
 
 using namespace std;
-#define _100G 107374182400
+#define _100GB (1024*1024*1024*100L)
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -30,8 +30,8 @@ struct RuntimeArgs_t {
 };
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    off_t initialOffset = _100G * args.thread_id;
-    
+    off_t initialOffset = _100GB * args.thread_id;
+
     std::stringstream rstats;
     rstats << "TID:" << args.thread_id
         << " read_offset: " << initialOffset << " bytes" << endl;
@@ -42,7 +42,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
     double start = gettime();
     uint64_t ops = 0;
     while (gettime() - start < args.runtime) {
-        off_t readOffset = initialOffset;
+        off_t readOffset = initialOffset + (ops * page_size) % _100GB;
         ssize_t readCount = pread(args.fd, buffer, page_size, readOffset);
         if (readCount <= 0) {
             perror("Read error");
