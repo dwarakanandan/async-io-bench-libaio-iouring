@@ -46,7 +46,18 @@ void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
     if (args.debugInfo) cout << stats.str();
 }
 
-double syncioSequentialRead(const RuntimeArgs_t& args) {
+void syncioRead(double start, int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
+    while (gettime() - start < RUN_TIME) {
+        ssize_t readCount = pread(fd, buffer, buffer_size, offsets[*ops]);
+        if(readCount < 0) {
+            perror("Read error");
+            return;
+        }
+        (*ops)++;
+    }
+}
+
+double syncioSequential(const RuntimeArgs_t& args) {
     size_t buffer_size  = _100MB;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
@@ -57,21 +68,15 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
     }
 
     double start = gettime();
-    while (gettime() - start < RUN_TIME) {
-        ssize_t readCount = pread(args.fd, buffer, buffer_size, offsets[ops]);
-        if(readCount < 0) {
-            perror("Read error");
-            return -1;
-        }
-        ops++;
-    }
+    
+    syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
 
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     printStats(args, throughput, ops);
     return throughput;
 }
 
-double syncioRandomRead(const RuntimeArgs_t& args) {
+double syncioRandom(const RuntimeArgs_t& args) {
     size_t buffer_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
@@ -82,21 +87,14 @@ double syncioRandomRead(const RuntimeArgs_t& args) {
     }
 
     double start = gettime();
-    while (gettime() - start < RUN_TIME) {
-        ssize_t readCount = pread(args.fd, buffer, buffer_size, offsets[ops]);
-        if(readCount < 0) {
-            perror("Read error");
-            return -1;
-        }
-        ops++;
-    }
+    syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
 
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     printStats(args, throughput, ops);
     return throughput;
 }
 
-void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* readMode) {
+void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* readMode) {
     std::vector<std::future<double>> threads;
     for (int i = 0; i < threadCount; ++i) {
         RuntimeArgs_t args;
@@ -106,9 +104,9 @@ void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
         if (strcmp(readMode, SEQUENTIAL) == 0) {
-            threads.push_back(std::async(syncioSequentialRead, args));
+            threads.push_back(std::async(syncioSequential, args));
         } else {
-            threads.push_back(std::async(syncioRandomRead, args));
+            threads.push_back(std::async(syncioRandom, args));
         }
     }
     double totalThroughput = 0;
@@ -116,16 +114,16 @@ void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char
         totalThroughput += t.get();
     }
     if (strcmp(readMode, SEQUENTIAL) == 0) {
-        cout << SEQUENTIAL << " Block-size: " << _100MB/(1024) << "kB Total-throughput = " << totalThroughput << " GB/s" << endl;
+        cout << SEQUENTIAL << " Block-size: " << _100MB/(1024) << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
     } else {
-        cout << RANDOM << " Block-size: " << userArgs.blk_size << "kB Total-throughput = " << totalThroughput << " GB/s" << endl;
+        cout << RANDOM << " Block-size: " << userArgs.blk_size << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
     }
 }
 
 int main(int argc, char const *argv[])
 {
     if (argc < 3 ) {
-        cout << "Usage: syncio -f <file> -t <threads> -rt <runtime> -blk <block_size_kB> -d(enables debuginfo)" << endl;
+        cout << "Usage: syncio -f <file> -t <threads> -blk <block_size_kB> -d(enables debuginfo)" << endl;
         exit(1);
     }
 
@@ -150,7 +148,7 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    runReadBenchmark(args, threadCount, SEQUENTIAL);
-    runReadBenchmark(args, threadCount, RANDOM);
+    runBenchmark(args, threadCount, SEQUENTIAL);
+    runBenchmark(args, threadCount, RANDOM);
     return 0;
 }
