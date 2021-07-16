@@ -47,7 +47,7 @@ double syncioRead(const RuntimeArgs_t& args) {
     size_t page_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, page_size);
     uint64_t ops = 0;
-    
+
     off_t offsets[100000];
     if (strcmp(args.readMode, SEQUENTIAL) == 0) {
         for(int i=0; i<100000; i++) {
@@ -57,6 +57,10 @@ double syncioRead(const RuntimeArgs_t& args) {
         for(int i=0; i<100000; i++) {
             offsets[i] = args.read_offset + (rand() * page_size) % _100GB;
         }
+    }
+
+    for(int i=0; i<10; i++) {
+        cout << offsets[i] << endl;
     }
 
     double start = gettime();
