@@ -13,7 +13,7 @@
 #include <future>
 
 using namespace std;
-#define RUNTIME 1
+#define _100G 107374182400
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -30,12 +30,18 @@ struct RuntimeArgs_t {
 };
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    char* buffer = (char *) aligned_alloc(1024, 1024 * args.blk_size);
+    off_t initialOffset = _100G * args.thread_id;
+    std::stringstream rstats;
+    rstats << "TID:" << args.thread_id
+        << " read_offset: " << initialOffset << " bytes" << endl;
+    size_t page_size  = 1024 * args.blk_size;
+    char* buffer = (char *) aligned_alloc(1024, page_size);
     double start = gettime();
     uint64_t ops = 0;
     while (gettime() - start < args.runtime) {
-        ssize_t readCount = read(args.fd, buffer, 1024 * args.blk_size);
-        if (readCount < 0) {
+        off_t readOffset = initialOffset;
+        ssize_t readCount = pread(args.fd, buffer, page_size, readOffset);
+        if (readCount <= 0) {
             perror("Read error");
             return -1;
         }
@@ -43,11 +49,10 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
     }
     double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
 
-    std::stringstream stats;
-    stats << "TID:" << args.thread_id
-        << " bsize: " << args.blk_size << "kB"
+    std::stringstream tstats;
+    tstats << "TID:" << args.thread_id
         << " ops: " << throughput << " GB/s" << endl;
-    if (args.debug) cout << stats.str();
+    if (args.debug) cout << tstats.str();
     return throughput;
 }
 
