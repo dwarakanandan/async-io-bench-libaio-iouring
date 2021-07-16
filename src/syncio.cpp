@@ -50,11 +50,11 @@ double syncioRead(const RuntimeArgs_t& args) {
 
     off_t offsets[1000000];
     if (strcmp(args.readMode, SEQUENTIAL) == 0) {
-        for(int i=0; i<100000; i++) {
+        for(int i=0; i<1000000; i++) {
             offsets[i] = args.read_offset + (i * page_size) % _100GB;
         }
     } else {
-        for(int i=0; i<100000; i++) {
+        for(int i=0; i<1000000; i++) {
             offsets[i] = args.read_offset + (rand() * page_size) % _100GB;
         }
     }
