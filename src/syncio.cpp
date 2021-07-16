@@ -62,6 +62,7 @@ double syncioRead(const RuntimeArgs_t& args) {
         }
         ops++;
     }
+    cout << ops << endl;
 
     double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
     printStats(args, throughput);
