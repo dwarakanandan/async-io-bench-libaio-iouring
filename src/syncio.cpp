@@ -129,7 +129,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, const char* operation, const char* mo
 int main(int argc, char const *argv[])
 {
     if (argc < 3 ) {
-        cout << "syncio -f <file> -t <threads> -blk <block_size_kB> -d(enables debuginfo)" << endl;
+        cout << "syncio --file <file> --threads <threads> --bsize <block_size_kB> --debug(enables debuginfo)" << endl;
         exit(1);
     }
 
@@ -142,10 +142,10 @@ int main(int argc, char const *argv[])
     args.debugInfo = false;
     
     for (int i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "-f") == 0) {filename = argv[i+1];}
-        if (strcmp(argv[i], "-blk") == 0) {args.blk_size = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "-t") == 0) {args.thread_count = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "-d") == 0) {args.debugInfo = true;}
+        if (strcmp(argv[i], "--file") == 0) {filename = argv[i+1];}
+        if (strcmp(argv[i], "--bsize") == 0) {args.blk_size = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "--threads") == 0) {args.thread_count = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
     }
 
     args.fd = open(filename, O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
