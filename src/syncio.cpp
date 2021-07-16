@@ -20,8 +20,11 @@ using namespace std;
 #define MAX_OPS 100000
 #define RUN_TIME 1
 
-const char* SEQUENTIAL = "Sequential";
-const char* RANDOM = "Random";
+const char* SEQUENTIAL = "SEQUENTIAL";
+const char* RANDOM = "RANDOM";
+
+const char* READ = "READ";
+const char* WRITE = "WRITE";
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -35,6 +38,7 @@ struct RuntimeArgs_t {
     int blk_size;
     off_t read_offset;
     bool debugInfo;
+    const char* operation;
 };
 
 void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
@@ -57,6 +61,17 @@ void syncioRead(double start, int fd, char* buffer, size_t buffer_size, off_t of
     }
 }
 
+void syncioWrite(double start, int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
+    while (gettime() - start < RUN_TIME) {
+        ssize_t writeCount = pwrite(fd, buffer, buffer_size, offsets[*ops]);
+        if(writeCount < 0) {
+            perror("Write error");
+            return;
+        }
+        (*ops)++;
+    }
+}
+
 double syncioSequential(const RuntimeArgs_t& args) {
     size_t buffer_size  = _100MB;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
@@ -68,10 +83,13 @@ double syncioSequential(const RuntimeArgs_t& args) {
     }
 
     double start = gettime();
-    
-    syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
-
+    if (strcmp(args.operation, READ) == 0) {
+        syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
+    } else {
+        syncioWrite(start, args.fd, buffer, buffer_size, offsets, &ops);
+    }
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+
     printStats(args, throughput, ops);
     return throughput;
 }
@@ -87,14 +105,18 @@ double syncioRandom(const RuntimeArgs_t& args) {
     }
 
     double start = gettime();
-    syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
-
+    if (strcmp(args.operation, READ) == 0) {
+        syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
+    } else {
+        syncioWrite(start, args.fd, buffer, buffer_size, offsets, &ops);
+    }
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+
     printStats(args, throughput, ops);
     return throughput;
 }
 
-void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* readMode) {
+void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* operation, const char* mode) {
     std::vector<std::future<double>> threads;
     for (int i = 0; i < threadCount; ++i) {
         RuntimeArgs_t args;
@@ -103,7 +125,8 @@ void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* re
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
-        if (strcmp(readMode, SEQUENTIAL) == 0) {
+        args.operation = operation;
+        if (strcmp(mode, SEQUENTIAL) == 0) {
             threads.push_back(std::async(syncioSequential, args));
         } else {
             threads.push_back(std::async(syncioRandom, args));
@@ -113,10 +136,10 @@ void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* re
     for (auto& t : threads) {
         totalThroughput += t.get();
     }
-    if (strcmp(readMode, SEQUENTIAL) == 0) {
-        cout << SEQUENTIAL << " Block-size: " << _100MB/(1024) << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
+    if (strcmp(mode, SEQUENTIAL) == 0) {
+        cout << operation << " " << SEQUENTIAL << " Block-size: " << _100MB/(1024) << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
     } else {
-        cout << RANDOM << " Block-size: " << userArgs.blk_size << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
+        cout << operation << " " << RANDOM << " Block-size: " << userArgs.blk_size << " kB  Throughput = " << totalThroughput << " GB/s" << endl;
     }
 }
 
@@ -148,7 +171,9 @@ int main(int argc, char const *argv[])
         return -1;
     }
 
-    runBenchmark(args, threadCount, SEQUENTIAL);
-    runBenchmark(args, threadCount, RANDOM);
+    runBenchmark(args, threadCount, READ, SEQUENTIAL);
+    runBenchmark(args, threadCount, READ, RANDOM);
+    runBenchmark(args, threadCount, WRITE, SEQUENTIAL);
+    runBenchmark(args, threadCount, WRITE, RANDOM);
     return 0;
 }
