@@ -115,7 +115,11 @@ void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char
     for (auto& t : threads) {
         totalThroughput += t.get();
     }
-    cout << readMode << " : Total throughput = " << totalThroughput << " GB/s" << endl;
+    if (strcmp(readMode, SEQUENTIAL) == 0) {
+        cout << SEQUENTIAL << " Block-size: " << _100MB/1024 << "kB : Total-throughput = " << totalThroughput << " GB/s" << endl;
+    } else {
+        cout << RANDOM << " Block-size: " << userArgs.blk_size << "kB : Total-throughput = " << totalThroughput << " GB/s" << endl;
+    }
 }
 
 int main(int argc, char const *argv[])
