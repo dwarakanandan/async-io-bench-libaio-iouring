@@ -59,10 +59,6 @@ double syncioRead(const RuntimeArgs_t& args) {
         }
     }
 
-    for(int i=0; i<10; i++) {
-        cout << offsets[i] << endl;
-    }
-
     double start = gettime();
     while (gettime() - start < 1) {
         pread(args.fd, buffer, page_size, offsets[ops]);
