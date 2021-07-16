@@ -17,8 +17,8 @@ using namespace std;
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
-#define MAX_OPS 100000
-#define RUN_TIME 1
+#define MAX_OPS 200000
+#define RUN_TIME 2
 
 const char* SEQUENTIAL = "SEQUENTIAL";
 const char* RANDOM = "RANDOM";
@@ -46,7 +46,7 @@ void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
     stats << "TID:" << args.thread_id
         << " offset:" << args.read_offset / _1GB << "GB"
         << " ops:" << ops
-        << " throughput:" << throughput << "GB/s" << endl;
+        << " throughput:" << throughput << " GB/s" << endl;
     if (args.debugInfo) cout << stats.str();
 }
 
