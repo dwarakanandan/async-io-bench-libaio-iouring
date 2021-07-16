@@ -31,7 +31,6 @@ struct RuntimeArgs_t {
     int fd;
     int blk_size;
     off_t read_offset;
-    int runtime;
     bool debugInfo;
     const char* readMode;
 };
@@ -47,24 +46,26 @@ void printStats(const RuntimeArgs_t& args, double throughput) {
 double syncioRead(const RuntimeArgs_t& args) {
     size_t page_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, page_size);
-    bool isSequentialRead = strcmp(args.readMode, SEQUENTIAL) == 0;
     uint64_t ops = 0;
+    
+    off_t offsets[100000];
+    if (strcmp(args.readMode, SEQUENTIAL) == 0) {
+        for(int i=0; i<100000; i++) {
+            offsets[i] = args.read_offset + (i * page_size) % _100GB;
+        }
+    } else {
+        for(int i=0; i<100000; i++) {
+            offsets[i] = args.read_offset + (rand() * page_size) % _100GB;
+        }
+    }
 
     double start = gettime();
-    while (gettime() - start < args.runtime) {
-        off_t readOffset = isSequentialRead ?
-            args.read_offset + (ops * page_size) % _100GB
-            : args.read_offset + (rand() * page_size) % _100GB;
-        ssize_t readCount = pread(args.fd, buffer, page_size, readOffset);
-        if (readCount <= 0) {
-            perror("Read error");
-            return -1;
-        }
+    while (gettime() - start < 1) {
+        pread(args.fd, buffer, page_size, offsets[ops]);
         ops++;
     }
-    cout << ops << endl;
 
-    double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
+    double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024));
     printStats(args, throughput);
     return throughput;
 }
@@ -76,7 +77,6 @@ void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char
         args.thread_id = i;
         args.blk_size = userArgs.blk_size;
         args.fd = userArgs.fd;
-        args.runtime = userArgs.runtime;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
         args.readMode = readMode;
@@ -102,14 +102,12 @@ int main(int argc, char const *argv[])
     int threadCount = 1;
     RuntimeArgs_t args;
     args.blk_size = 16;
-    args.runtime = 1;
     args.debugInfo = false;
     
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0) {filename = argv[i+1];}
         if (strcmp(argv[i], "-blk") == 0) {args.blk_size = atoi(argv[i+1]);}
         if (strcmp(argv[i], "-t") == 0) {threadCount = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "-rt") == 0) {args.runtime = atoi(argv[i+1]);}
         if (strcmp(argv[i], "-d") == 0) {args.debugInfo = true;}
     }
 
