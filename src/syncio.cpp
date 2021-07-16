@@ -15,7 +15,10 @@
 using namespace std;
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
-#define MAX_OFFSET (1024*1024*1024*3500L)
+#define MAX_READ_OFFSET (1024*1024*1024*3500L)
+
+const char* SEQUENTIAL = "Sequential";
+const char* RANDOM = "Random";
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -29,7 +32,8 @@ struct RuntimeArgs_t {
     int blk_size;
     off_t read_offset;
     int runtime;
-    bool debug;
+    bool debugInfo;
+    const char* readMode;
 };
 
 void printStats(const RuntimeArgs_t& args, double throughput) {
@@ -37,16 +41,20 @@ void printStats(const RuntimeArgs_t& args, double throughput) {
     stats << "TID:" << args.thread_id
         << " read_offset: " << args.read_offset / _1GB << " GB"
         << " throughput: " << throughput << " GB/s" << endl;
-    if (args.debug) cout << stats.str();
+    if (args.debugInfo) cout << stats.str();
 }
 
-double syncioSequentialRead(const RuntimeArgs_t& args) {
+double syncioRead(const RuntimeArgs_t& args) {
     size_t page_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, page_size);
-    double start = gettime();
+    bool isSequentialRead = strcmp(args.readMode, SEQUENTIAL) == 0;
     uint64_t ops = 0;
+
+    double start = gettime();
     while (gettime() - start < args.runtime) {
-        off_t readOffset = args.read_offset + (ops * page_size) % _100GB;
+        off_t readOffset = isSequentialRead ?
+            args.read_offset + (ops * page_size) % _100GB
+            : args.read_offset + (rand() * page_size) % _100GB;
         ssize_t readCount = pread(args.fd, buffer, page_size, readOffset);
         if (readCount <= 0) {
             perror("Read error");
@@ -54,9 +62,30 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
         }
         ops++;
     }
+
     double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
     printStats(args, throughput);
     return throughput;
+}
+
+void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* readMode) {
+    std::vector<std::future<double>> threads;
+    for (int i = 0; i < threadCount; ++i) {
+        RuntimeArgs_t args;
+        args.thread_id = i;
+        args.blk_size = userArgs.blk_size;
+        args.fd = userArgs.fd;
+        args.runtime = userArgs.runtime;
+        args.debugInfo = userArgs.debugInfo;
+        args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
+        args.readMode = readMode;
+        threads.push_back(std::async(syncioRead, args));
+    }
+    double totalThroughput = 0;
+    for (auto& t : threads) {
+        totalThroughput += t.get();
+    }
+    cout << readMode << " : Total throughput = " << totalThroughput << " GB/s" << endl;
 }
 
 int main(int argc, char const *argv[])
@@ -65,45 +94,31 @@ int main(int argc, char const *argv[])
         cout << "Usage: syncio -f <file> -t <threads> -rt <runtime> -blk <block_size_kB> -d(enables debuginfo)" << endl;
         exit(1);
     }
+
+    srand(time(NULL));
+
     const char* filename;
-    int blockSize = 16;
     int threadCount = 1;
-    int runtime = 1;
-    bool debug = false;
+    RuntimeArgs_t args;
+    args.blk_size = 16;
+    args.runtime = 1;
+    args.debugInfo = false;
+    
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0) {filename = argv[i+1];}
-        if (strcmp(argv[i], "-blk") == 0) {blockSize = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "-blk") == 0) {args.blk_size = atoi(argv[i+1]);}
         if (strcmp(argv[i], "-t") == 0) {threadCount = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "-rt") == 0) {runtime = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "-d") == 0) {debug = true;}
+        if (strcmp(argv[i], "-rt") == 0) {args.runtime = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "-d") == 0) {args.debugInfo = true;}
     }
 
-    int fd;
-
-    fd = open(filename, O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
-    if (fd < 0) {
+    args.fd = open(filename, O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
+    if (args.fd < 0) {
         perror("Open error");
         return -1;
     }
 
-    std::vector<std::future<double>> threads;
-    for (int i = 0; i < threadCount; ++i) {
-        RuntimeArgs_t args;
-        args.thread_id = i;
-        args.blk_size = blockSize;
-        args.fd = fd;
-        args.runtime = runtime;
-        args.debug = debug;
-        args.read_offset = (_100GB * i) % MAX_OFFSET;
-        cout << args.read_offset << endl;
-        threads.push_back(std::async(syncioSequentialRead, args));
-    }
-
-    double aggregateStats = 0;
-    for (auto& t : threads) {
-        aggregateStats += t.get();
-    }
-
-    cout << "Total throughput = " << aggregateStats << " GB/s" << endl;
+    runReadBenchmark(args, threadCount, SEQUENTIAL);
+    runReadBenchmark(args, threadCount, RANDOM);
     return 0;
 }
