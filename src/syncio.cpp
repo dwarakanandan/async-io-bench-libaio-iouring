@@ -32,7 +32,6 @@ struct RuntimeArgs_t {
     int blk_size;
     off_t read_offset;
     bool debugInfo;
-    const char* readMode;
 };
 
 void printStats(const RuntimeArgs_t& args, double throughput) {
@@ -43,29 +42,52 @@ void printStats(const RuntimeArgs_t& args, double throughput) {
     if (args.debugInfo) cout << stats.str();
 }
 
-double syncioRead(const RuntimeArgs_t& args) {
-    size_t page_size  = 1024 * args.blk_size;
-    char* buffer = (char *) aligned_alloc(1024, page_size);
+double syncioSequentialRead(const RuntimeArgs_t& args) {
+    size_t buffer_size  = 1024 * 1024 * 1024;
+    char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
-    off_t offsets[1000000];
-    if (strcmp(args.readMode, SEQUENTIAL) == 0) {
-        for(int i=0; i<1000000; i++) {
-            offsets[i] = args.read_offset + (i * page_size) % _100GB;
-        }
-    } else {
-        for(int i=0; i<1000000; i++) {
-            offsets[i] = args.read_offset + (rand() * page_size) % _100GB;
-        }
+    off_t offsets[100];
+    for(int i=0; i < 100; i++) {
+        offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
     }
 
     double start = gettime();
     while (gettime() - start < 1) {
-        pread(args.fd, buffer, page_size, offsets[ops]);
+        ssize_t readCount = pread(args.fd, buffer, buffer_size, offsets[ops]);
+        if(readCount < 0) {
+            perror("Read error");
+            return -1;
+        }
         ops++;
     }
 
-    double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024));
+    double throughput = ((ops * buffer_size)/(1024.0*1024*1024));
+    printStats(args, throughput);
+    return throughput;
+}
+
+double syncioRandomRead(const RuntimeArgs_t& args) {
+    size_t buffer_size  = 1024 * args.blk_size;
+    char* buffer = (char *) aligned_alloc(1024, buffer_size);
+    uint64_t ops = 0;
+
+    off_t offsets[1000000];
+    for(int i=0; i < 1000000; i++) {
+        offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
+    }
+
+    double start = gettime();
+    while (gettime() - start < 1) {
+        ssize_t readCount = pread(args.fd, buffer, buffer_size, offsets[ops]);
+        if(readCount < 0) {
+            perror("Read error");
+            return -1;
+        }
+        ops++;
+    }
+
+    double throughput = ((ops * buffer_size)/(1024.0*1024*1024));
     printStats(args, throughput);
     return throughput;
 }
@@ -79,8 +101,11 @@ void runReadBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
-        args.readMode = readMode;
-        threads.push_back(std::async(syncioRead, args));
+        if (strcmp(readMode, SEQUENTIAL) == 0) {
+            threads.push_back(std::async(syncioSequentialRead, args));
+        } else {
+            threads.push_back(std::async(syncioRandomRead, args));
+        }
     }
     double totalThroughput = 0;
     for (auto& t : threads) {
