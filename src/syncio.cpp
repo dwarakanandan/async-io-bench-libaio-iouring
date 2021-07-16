@@ -15,7 +15,7 @@
 using namespace std;
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
-#define MAX_OFFSET _100GB*35
+#define MAX_OFFSET (1024*1024*1024*3500L)
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -95,6 +95,7 @@ int main(int argc, char const *argv[])
         args.runtime = runtime;
         args.debug = debug;
         args.read_offset = (_100GB * i) % MAX_OFFSET;
+        cout << args.read_offset << endl;
         threads.push_back(std::async(syncioSequentialRead, args));
     }
 
