@@ -17,7 +17,7 @@ using namespace std;
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
 #define MAX_OPS 100000
-#define RUN_TIME 5
+#define RUN_TIME 1
 
 const char* SEQUENTIAL = "Sequential";
 const char* RANDOM = "Random";
