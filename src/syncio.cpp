@@ -13,7 +13,7 @@
 #include <future>
 
 using namespace std;
-#define _256MB (1024*1024*256)
+#define _100MB (1024*1024*100)
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
@@ -40,14 +40,14 @@ struct RuntimeArgs_t {
 void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
     std::stringstream stats;
     stats << "TID:" << args.thread_id
-        << " offset: " << args.read_offset / _1GB << "GB"
-        << " ops: " << ops
-        << " throughput: " << throughput << " GB/s" << endl;
+        << " offset:" << args.read_offset / _1GB << "GB"
+        << " ops:" << ops
+        << " throughput:" << throughput << "GB/s" << endl;
     if (args.debugInfo) cout << stats.str();
 }
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    size_t buffer_size  = _256MB;
+    size_t buffer_size  = _100MB;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
