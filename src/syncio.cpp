@@ -16,6 +16,7 @@ using namespace std;
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
+#define MAX_OPS 100000
 
 const char* SEQUENTIAL = "Sequential";
 const char* RANDOM = "Random";
@@ -34,10 +35,11 @@ struct RuntimeArgs_t {
     bool debugInfo;
 };
 
-void printStats(const RuntimeArgs_t& args, double throughput) {
+void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
     std::stringstream stats;
     stats << "TID:" << args.thread_id
         << " read_offset: " << args.read_offset / _1GB << " GB"
+        << " Number ops: " << ops
         << " throughput: " << throughput << " GB/s" << endl;
     if (args.debugInfo) cout << stats.str();
 }
@@ -47,8 +49,8 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
-    off_t offsets[100];
-    for(int i=0; i < 100; i++) {
+    off_t offsets[MAX_OPS];
+    for(int i=0; i < MAX_OPS; i++) {
         offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
     }
 
@@ -63,7 +65,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
     }
 
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024));
-    printStats(args, throughput);
+    printStats(args, throughput, ops);
     return throughput;
 }
 
@@ -72,8 +74,8 @@ double syncioRandomRead(const RuntimeArgs_t& args) {
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
-    off_t offsets[1000000];
-    for(int i=0; i < 1000000; i++) {
+    off_t offsets[MAX_OPS];
+    for(int i=0; i < MAX_OPS; i++) {
         offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
     }
 
@@ -88,7 +90,7 @@ double syncioRandomRead(const RuntimeArgs_t& args) {
     }
 
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024));
-    printStats(args, throughput);
+    printStats(args, throughput, ops);
     return throughput;
 }
 
