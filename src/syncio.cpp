@@ -13,6 +13,7 @@
 #include <future>
 
 using namespace std;
+#define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 
 static inline double gettime(void) {
@@ -34,7 +35,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
 
     std::stringstream rstats;
     rstats << "TID:" << args.thread_id
-        << " read_offset: " << initialOffset / _100GB << " GB" << endl;
+        << " read_offset: " << initialOffset / _1GB << " GB" << endl;
     if (args.debug) cout << rstats.str();
 
     size_t page_size  = 1024 * args.blk_size;
