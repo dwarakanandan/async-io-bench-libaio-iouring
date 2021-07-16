@@ -39,6 +39,7 @@ struct RuntimeArgs_t {
     off_t read_offset;
     bool debugInfo;
     const char* operation;
+    const char* opmode;
 };
 
 void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
@@ -72,37 +73,25 @@ void syncioWrite(double start, int fd, char* buffer, size_t buffer_size, off_t o
     }
 }
 
-double syncioSequential(const RuntimeArgs_t& args) {
-    size_t buffer_size  = _100MB;
-    char* buffer = (char *) aligned_alloc(1024, buffer_size);
+double syncio(const RuntimeArgs_t& args) {
+    size_t buffer_size;
     uint64_t ops = 0;
-
     off_t offsets[MAX_OPS];
-    for(int i=0; i < MAX_OPS; i++) {
-        offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
-    }
-
-    double start = gettime();
-    if (strcmp(args.operation, READ) == 0) {
-        syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
+    
+    if (strcmp(args.opmode, SEQUENTIAL) == 0) {
+        buffer_size  = _100MB;
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
+        }
     } else {
-        syncioWrite(start, args.fd, buffer, buffer_size, offsets, &ops);
+        buffer_size  = 1024 * args.blk_size;
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
+        }
     }
-    double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
 
-    printStats(args, throughput, ops);
-    return throughput;
-}
-
-double syncioRandom(const RuntimeArgs_t& args) {
-    size_t buffer_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
-    uint64_t ops = 0;
-
-    off_t offsets[MAX_OPS];
-    for(int i=0; i < MAX_OPS; i++) {
-        offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
-    }
+    memset(buffer, '1', buffer_size);
 
     double start = gettime();
     if (strcmp(args.operation, READ) == 0) {
@@ -126,11 +115,8 @@ void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* op
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
         args.operation = operation;
-        if (strcmp(mode, SEQUENTIAL) == 0) {
-            threads.push_back(std::async(syncioSequential, args));
-        } else {
-            threads.push_back(std::async(syncioRandom, args));
-        }
+        args.opmode = mode;
+        threads.push_back(std::async(syncio, args));
     }
     double totalThroughput = 0;
     for (auto& t : threads) {
