@@ -43,7 +43,7 @@ void printStats(const RuntimeArgs_t& args, double throughput) {
 }
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    size_t buffer_size  = 1024 * 1024 * 1024;
+    size_t buffer_size  = 1024 * 1024 * 100;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
