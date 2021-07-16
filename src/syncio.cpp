@@ -30,13 +30,17 @@ struct RuntimeArgs_t {
     bool debug;
 };
 
+void printStats(const RuntimeArgs_t& args, double throughput) {
+    off_t initialOffset = _100GB * args.thread_id;
+    std::stringstream stats;
+    stats << "TID:" << args.thread_id
+        << " read_offset: " << initialOffset / _1GB << " GB"
+        << " throughput: " << throughput << " GB/s" << endl;
+    if (args.debug) cout << stats.str();
+}
+
 double syncioSequentialRead(const RuntimeArgs_t& args) {
     off_t initialOffset = _100GB * args.thread_id;
-
-    std::stringstream rstats;
-    rstats << "TID:" << args.thread_id
-        << " read_offset: " << initialOffset / _1GB << " GB" << endl;
-    if (args.debug) cout << rstats.str();
 
     size_t page_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, page_size);
@@ -52,11 +56,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
         ops++;
     }
     double throughput = ((ops * 1024 * args.blk_size)/(1024.0*1024*1024 * args.runtime));
-
-    std::stringstream tstats;
-    tstats << "TID:" << args.thread_id
-        << " ops: " << throughput << " GB/s" << endl;
-    if (args.debug) cout << tstats.str();
+    printStats(args, throughput);
     return throughput;
 }
 
