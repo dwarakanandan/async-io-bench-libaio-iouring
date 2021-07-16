@@ -13,6 +13,7 @@
 #include <future>
 
 using namespace std;
+#define _256MB (1024*1024*256)
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
@@ -46,7 +47,7 @@ void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
 }
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    size_t buffer_size  = 1024 * 1024 * 1024;
+    size_t buffer_size  = _256MB;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
