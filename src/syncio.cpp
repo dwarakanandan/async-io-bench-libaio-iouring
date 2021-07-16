@@ -15,6 +15,7 @@
 using namespace std;
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
+#define MAX_OFFSET _100GB*35
 
 static inline double gettime(void) {
   struct timeval now_tv;
@@ -40,7 +41,7 @@ void printStats(const RuntimeArgs_t& args, double throughput) {
 }
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    off_t initialOffset = _100GB * args.thread_id;
+    off_t initialOffset = (_100GB * args.thread_id) % MAX_OFFSET;
 
     size_t page_size  = 1024 * args.blk_size;
     char* buffer = (char *) aligned_alloc(1024, page_size);
