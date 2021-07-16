@@ -138,17 +138,17 @@ void runBenchmark(const RuntimeArgs_t& userArgs, int threadCount, const char* op
     }
     if (strcmp(mode, SEQUENTIAL) == 0) {
         cout << operation << " " << SEQUENTIAL << " BLK_SIZE: " << _100MB/(1024) <<
-            " kB   Throughput = " << totalThroughput << " GB/s" << endl;
+            " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
     } else {
         cout << operation << " " << RANDOM << " BLK_SIZE: " << userArgs.blk_size <<
-            " kB   Throughput = " << totalThroughput << " GB/s" << endl;
+            " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
     }
 }
 
 int main(int argc, char const *argv[])
 {
     if (argc < 3 ) {
-        cout << "Usage: syncio -f <file> -t <threads> -blk <block_size_kB> -d(enables debuginfo)" << endl;
+        cout << "syncio -f <file> -t <threads> -blk <block_size_kB> -d(enables debuginfo)" << endl;
         exit(1);
     }
 
