@@ -17,6 +17,7 @@ using namespace std;
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
 #define MAX_OPS 100000
+#define RUN_TIME 5
 
 const char* SEQUENTIAL = "Sequential";
 const char* RANDOM = "Random";
@@ -38,14 +39,14 @@ struct RuntimeArgs_t {
 void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
     std::stringstream stats;
     stats << "TID:" << args.thread_id
-        << " read_offset: " << args.read_offset / _1GB << " GB"
-        << " Number ops: " << ops
+        << " offset: " << args.read_offset / _1GB << "GB"
+        << " ops: " << ops
         << " throughput: " << throughput << " GB/s" << endl;
     if (args.debugInfo) cout << stats.str();
 }
 
 double syncioSequentialRead(const RuntimeArgs_t& args) {
-    size_t buffer_size  = 1024 * 1024 * 100;
+    size_t buffer_size  = 1024 * 1024 * 1024;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     uint64_t ops = 0;
 
@@ -55,7 +56,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
     }
 
     double start = gettime();
-    while (gettime() - start < 1) {
+    while (gettime() - start < RUN_TIME) {
         ssize_t readCount = pread(args.fd, buffer, buffer_size, offsets[ops]);
         if(readCount < 0) {
             perror("Read error");
@@ -64,7 +65,7 @@ double syncioSequentialRead(const RuntimeArgs_t& args) {
         ops++;
     }
 
-    double throughput = ((ops * buffer_size)/(1024.0*1024*1024));
+    double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     printStats(args, throughput, ops);
     return throughput;
 }
@@ -80,7 +81,7 @@ double syncioRandomRead(const RuntimeArgs_t& args) {
     }
 
     double start = gettime();
-    while (gettime() - start < 1) {
+    while (gettime() - start < RUN_TIME) {
         ssize_t readCount = pread(args.fd, buffer, buffer_size, offsets[ops]);
         if(readCount < 0) {
             perror("Read error");
@@ -89,7 +90,7 @@ double syncioRandomRead(const RuntimeArgs_t& args) {
         ops++;
     }
 
-    double throughput = ((ops * buffer_size)/(1024.0*1024*1024));
+    double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     printStats(args, throughput, ops);
     return throughput;
 }
