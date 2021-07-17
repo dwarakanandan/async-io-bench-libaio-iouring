@@ -105,7 +105,8 @@ double syncio(const RuntimeArgs_t& args) {
 }
 
 void runBenchmark(RuntimeArgs_t& userArgs) {
-    int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
+    //int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
+    int blk_size = userArgs.blk_size;
     std::vector<std::future<double>> threads;
     for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
