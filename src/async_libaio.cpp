@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 	int ret;
 	int fd;
 
-	fd = open("dw", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+	fd = open("/dev/md0", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
 		perror("open");
 		return -1;
