@@ -1,56 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <iostream>
-#include <unistd.h>
-#include <thread>
-#include <vector>
-#include <sstream>
-#include <future>
+#include "helper.h"
 
 using namespace std;
-#define _100MB (1024*1024*100)
-#define _1GB (1024*1024*1024*1L)
-#define _100GB (1024*1024*1024*100L)
-#define MAX_READ_OFFSET (1024*1024*1024*3500L)
+
 #define MAX_OPS 200000
 #define RUN_TIME 2
-
-const char* SEQUENTIAL = "SEQUENTIAL";
-const char* RANDOM = "RANDOM";
-
-const char* READ = "READ";
-const char* WRITE = "WRITE";
-
-static inline double gettime(void) {
-  struct timeval now_tv;
-  gettimeofday (&now_tv, NULL);
-  return ((double)now_tv.tv_sec) + ((double)now_tv.tv_usec)/1000000.0;
-}
-
-struct RuntimeArgs_t {
-    int thread_id;
-    int thread_count;
-    int fd;
-    int blk_size;
-    off_t read_offset;
-    bool debugInfo;
-    const char* operation;
-    const char* opmode;
-};
-
-void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
-    std::stringstream stats;
-    stats << "TID:" << args.thread_id
-        << " offset:" << args.read_offset / _1GB << "GB"
-        << " ops:" << ops
-        << " throughput:" << throughput << " GB/s" << endl;
-    if (args.debugInfo) cout << stats.str();
-}
 
 void syncioRead(double start, int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
     while (gettime() - start < RUN_TIME) {
@@ -79,7 +32,7 @@ double syncio(const RuntimeArgs_t& args) {
     uint64_t ops = 0;
     off_t offsets[MAX_OPS];
     
-    if (strcmp(args.opmode, SEQUENTIAL) == 0) {
+    if (args.opmode.compare(SEQUENTIAL) == 0) {
         for(int i=0; i < MAX_OPS; i++) {
             offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
         }
@@ -93,7 +46,7 @@ double syncio(const RuntimeArgs_t& args) {
     memset(buffer, '1', buffer_size);
 
     double start = gettime();
-    if (strcmp(args.operation, READ) == 0) {
+    if (args.operation.compare(READ) == 0) {
         syncioRead(start, args.fd, buffer, buffer_size, offsets, &ops);
     } else {
         syncioWrite(start, args.fd, buffer, buffer_size, offsets, &ops);
