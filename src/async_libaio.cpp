@@ -69,6 +69,12 @@ int main(int argc, char *argv[]) {
 	ret = io_getevents(ctx, 1, 1, events, NULL);
 	printf("events: %d\n", ret);
 
+    for (size_t i = 0; i < 10; i++)
+    {
+        printf("%lu: %d %c\n", i, data[i], data[i]);
+    }
+    
+
     struct timespec ts = timespec();
     ts.tv_sec = 5;
 
