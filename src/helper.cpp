@@ -69,11 +69,11 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         totalOps += results.op_count;
     }
 
-    cout << std::fixed << endl
+    cout << std::fixed
         << userArgs.operation << " " <<  userArgs.opmode << " "
-        << "BLK_SIZE: " << blk_size << " kB" << " "
-        << "OP_COUNT: " << totalOps << " "
-        << "THROUGHPUT: " << totalThroughput << " GB/s" << endl;
+        << "BLK_SIZE_KB:" << blk_size << " "
+        << "OP_COUNT:" << totalOps << " "
+        << "THROUGHPUT_GBPS:" << totalThroughput << endl;
 }
 
 double calculateThroughputGbps(uint64_t ops, size_t buffer_size) {
