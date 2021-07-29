@@ -4,7 +4,7 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
-#define MAX_OPS 100
+#define MAX_OPS 10
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -30,12 +30,12 @@ const char* getErrorMessage(const RuntimeArgs_t& args, std::string error) {
 	return msg.str().c_str();
 }
 
-void printOpStats(const RuntimeArgs_t& args, int ops_submitted, int ops_returned, int ops_errored) {
+void printOpStats(const RuntimeArgs_t& args, int ops_submitted, int ops_returned, int ops_failed) {
 	std::stringstream msg;
 	msg << "TID:" << args.thread_id
 		<< " OP_SUBMIT: " << ops_submitted << " "
 		<< " OP_RETURNED: " << ops_returned << " "
-		<< " OP_ERRORED: " << ops_errored << endl;
+		<< " OP_FAILED: " << ops_failed << endl;
 	cout << msg.str();
 }
 
@@ -48,7 +48,7 @@ Result_t return_error() {
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
-    uint64_t ops_submitted = 0, ops_returned = 0, ops_errored = 0;
+    uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
     off_t offsets[MAX_OPS];
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
@@ -110,11 +110,11 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	for (size_t i = 0; i < ops_returned; i++)
 	{
 		if (events[i].res < 0) {
-			ops_errored++;
+			ops_failed++;
 		}
 	}
 
-	if (args.debugInfo) printOpStats(args, ops_submitted, ops_returned, ops_errored);
+	if (args.debugInfo) printOpStats(args, ops_submitted, ops_returned, ops_failed);
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
@@ -123,8 +123,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	}
 
     Result_t results;
-    results.throughput = (((ops_returned-ops_errored) * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
-    results.op_count = ops_returned-ops_errored;
+    results.throughput = (((ops_returned-ops_failed) * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+    results.op_count = ops_returned-ops_failed;
 
     if (args.debugInfo) printStats(args, results);
     return results;
