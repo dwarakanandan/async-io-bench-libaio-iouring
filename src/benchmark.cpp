@@ -3,39 +3,64 @@
 #include "async_libaio.h"
 
 using namespace std;
-#define NUM_BLOCK_SIZES 10
 
-int block_sizes[NUM_BLOCK_SIZES] = {2, 4, 16, 32, 64, 128, 256, 512, 1024, 2048};
+void fileNameCheck(int argc, char const *argv[]) {
+    bool hasFileName = false;
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "--file") == 0) {
+            hasFileName = true;
+        }
+    }
 
-void runIoBenchmark(RuntimeArgs_t args, std::string operation, std::string opmode, int block_size, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
-    args.operation = operation;
-    args.opmode = opmode;
-    args.blk_size = block_size;
-    runBenchmark(args, benchmarkFunction);
+    std::stringstream helpstr;
+    helpstr << "benchmark "
+        << "--file <file_name> "
+        << "--threads <thread_count> "
+        << "--bsize <block_size_kb> "
+        << "--op <read|write> "
+        << "--mode <seq|rand> "
+        << "--lib <syncio|libaio> "
+        << "--debug (show_debug) " << endl;
+
+    if(!hasFileName) {
+        cout << helpstr.str();
+        exit(-1);
+    }
 }
 
-void runIoBenchmarks(RuntimeArgs_t args, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
-    for (size_t i = 0; i < NUM_BLOCK_SIZES; i++) runIoBenchmark(args, READ, SEQUENTIAL, block_sizes[i], benchmarkFunction);
-    for (size_t i = 0; i < NUM_BLOCK_SIZES; i++) runIoBenchmark(args, READ, RANDOM, block_sizes[i], benchmarkFunction);
-    for (size_t i = 0; i < NUM_BLOCK_SIZES; i++) runIoBenchmark(args, WRITE, SEQUENTIAL, block_sizes[i], benchmarkFunction);
-    for (size_t i = 0; i < NUM_BLOCK_SIZES; i++) runIoBenchmark(args, WRITE, RANDOM, block_sizes[i], benchmarkFunction);
+RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
+    RuntimeArgs_t args;
+    args.thread_count = 1;
+    args.blk_size = 16;
+    args.debugInfo = false;
+    
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "--file") == 0) {args.filename = argv[i+1];}
+        if (strcmp(argv[i], "--bsize") == 0) {args.blk_size = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "--threads") == 0) {args.thread_count = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "--op") == 0) {args.operation = strcmp(argv[i+1], "read") == 0 ? READ: WRITE;}
+        if (strcmp(argv[i], "--mode") == 0) {args.opmode = strcmp(argv[i+1], "seq") == 0 ? SEQUENTIAL: RANDOM;}
+        if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
+        if (strcmp(argv[i], "--lib") == 0) {
+            args.lib = strcmp(argv[i+1], "syncio") == 0 ? SYNCIO:
+                (strcmp(argv[i+1], "libaio") == 0 ? LIBAIO : IOURING);
+        }
+    }
+    return args;
 }
 
 int main(int argc, char const *argv[])
 {
-    if (argc < 5) {
-        cout << "benchmark --file <file_name> --threads <thread_count> --debug" << std::endl;
-        return -1;
-    }
+    fileNameCheck(argc, argv);
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
 
-    // cout << endl << "syncio:" << endl;
-    // runIoBenchmarks(args, syncio);
-
-    cout << endl << "async_libaio:" << endl;
-    runIoBenchmarks(args, async_libaio);
+    switch(args.lib) {
+        case SYNCIO: runBenchmark(args, syncio); break;
+        case LIBAIO: runBenchmark(args, async_libaio); break;
+        case IOURING: break;
+    }
 
     return 0;
 }

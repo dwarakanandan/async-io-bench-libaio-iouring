@@ -28,6 +28,12 @@ extern const std::string RANDOM;
 extern const std::string READ;
 extern const std::string WRITE;
 
+enum LIB {
+  SYNCIO,
+  LIBAIO,
+  IOURING
+};
+
 struct RuntimeArgs_t {
     std::string filename;
     int thread_id;
@@ -39,6 +45,7 @@ struct RuntimeArgs_t {
     bool debugInfo;
     std::string operation;
     std::string opmode;
+    LIB lib;
 };
 
 struct Result_t {
@@ -59,8 +66,6 @@ void printStats(const RuntimeArgs_t& args, const Result_t results);
 void printOpStats(const RuntimeArgs_t& args, const Result_t results);
 
 const char* getErrorMessageWithTid(const RuntimeArgs_t& args, std::string error);
-
-RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 
 void fileOpen(RuntimeArgs_t *args);
 

@@ -35,23 +35,6 @@ const char* getErrorMessageWithTid(const RuntimeArgs_t& args, std::string error)
 	return msg.str().c_str();
 }
 
-RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
-    RuntimeArgs_t args;
-    args.thread_count = 1;
-    args.blk_size = 16;
-    args.debugInfo = false;
-    
-    for (int i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "--file") == 0) {args.filename = argv[i+1];}
-        if (strcmp(argv[i], "--bsize") == 0) {args.blk_size = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "--threads") == 0) {args.thread_count = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "--op") == 0) {args.operation = strcmp(argv[i+1], "r") == 0 ? READ: WRITE;}
-        if (strcmp(argv[i], "--mode") == 0) {args.opmode = strcmp(argv[i+1], "s") == 0 ? SEQUENTIAL: RANDOM;}
-        if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
-    }
-    return args;
-}
-
 void fileOpen(RuntimeArgs_t *args) {
     args->fd = open(args->filename.c_str(), O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
     if (args->fd < 0) {
@@ -101,7 +84,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         totalOps += results.op_count;
     }
 
-    cout << std::fixed
+    cout << std::fixed << endl
         << userArgs.operation << " " <<  userArgs.opmode << " "
         << "BLK_SIZE: " << blk_size << " kB" << " "
         << "OP_COUNT: " << totalOps << " "
