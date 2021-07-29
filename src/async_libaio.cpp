@@ -104,34 +104,3 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }
-
-RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
-    RuntimeArgs_t args;
-    args.thread_count = 1;
-    args.blk_size = 16;
-    args.debugInfo = false;
-    
-    for (int i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "--file") == 0) {args.filename = argv[i+1];}
-        if (strcmp(argv[i], "--bsize") == 0) {args.blk_size = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "--threads") == 0) {args.thread_count = atoi(argv[i+1]);}
-        if (strcmp(argv[i], "--op") == 0) {args.operation = strcmp(argv[i+1], "read") == 0 ? READ: WRITE;}
-        if (strcmp(argv[i], "--mode") == 0) {args.opmode = strcmp(argv[i+1], "seq") == 0 ? SEQUENTIAL: RANDOM;}
-        if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
-        if (strcmp(argv[i], "--lib") == 0) {
-            args.lib = strcmp(argv[i+1], "syncio") == 0 ? SYNCIO:
-                (strcmp(argv[i+1], "libaio") == 0 ? LIBAIO : IOURING);
-        }
-    }
-    return args;
-}
-
-int main(int argc, char const *argv[])
-{
-    RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-    fileOpen(&args);
-
-    runBenchmark(args, async_libaio);
-
-    return 0;
-}

@@ -49,18 +49,18 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
     return args;
 }
 
-// int main(int argc, char const *argv[])
-// {
-//     fileNameCheck(argc, argv);
+int main(int argc, char const *argv[])
+{
+    fileNameCheck(argc, argv);
 
-//     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-//     fileOpen(&args);
+    RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
+    fileOpen(&args);
 
-//     switch(args.lib) {
-//         case SYNCIO: runBenchmark(args, syncio); break;
-//         case LIBAIO: runBenchmark(args, async_libaio); break;
-//         case IOURING: break;
-//     }
+    switch(args.lib) {
+        case SYNCIO: runBenchmark(args, syncio); break;
+        case LIBAIO: runBenchmark(args, async_libaio); break;
+        case IOURING: break;
+    }
 
-//     return 0;
-// }
+    return 0;
+}
