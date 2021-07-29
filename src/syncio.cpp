@@ -27,7 +27,7 @@ void syncioWrite(double start, int fd, char* buffer, size_t buffer_size, off_t o
     }
 }
 
-double syncio(const RuntimeArgs_t& args) {
+Result_t syncio(const RuntimeArgs_t& args) {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops = 0;
     off_t offsets[MAX_OPS];
@@ -53,8 +53,12 @@ double syncio(const RuntimeArgs_t& args) {
     }
     double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
 
-    printStats(args, throughput, ops);
-    return throughput;
+    Result_t results;
+    results.throughput = throughput;
+    results.op_count = ops;
+
+    if (args.debugInfo) printStats(args, results);
+    return results;
 }
 
 int main(int argc, char const *argv[])

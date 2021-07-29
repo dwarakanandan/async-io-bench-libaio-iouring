@@ -35,16 +35,21 @@ struct RuntimeArgs_t {
     std::string opmode;
 };
 
+struct Result_t {
+  double throughput;
+  uint64_t op_count;
+};
+
 static inline double gettime(void) {
   struct timeval now_tv;
   gettimeofday (&now_tv, NULL);
   return ((double)now_tv.tv_sec) + ((double)now_tv.tv_usec)/1000000.0;
 }
 
-void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops);
+void printStats(const RuntimeArgs_t& args, const Result_t results);
 
 RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 
 void fileOpen(RuntimeArgs_t *args);
 
-void runBenchmark(RuntimeArgs_t& userArgs, double (*benchmarkFunction)(const RuntimeArgs_t& args));
+void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args));

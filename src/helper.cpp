@@ -8,13 +8,13 @@ const std::string RANDOM = "RANDOM";
 const std::string READ = "READ";
 const std::string WRITE = "WRITE";
 
-void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops) {
+void printStats(const RuntimeArgs_t& args, const Result_t results) {
     std::stringstream stats;
     stats << "TID:" << args.thread_id
         << " offset:" << args.read_offset / _1GB << "GB"
-        << " ops:" << ops
-        << " throughput:" << throughput << " GB/s" << endl;
-    if (args.debugInfo) cout << stats.str();
+        << " ops:" << results.op_count
+        << " throughput:" << results.throughput << " GB/s" << endl;
+    cout << stats.str();
 }
 
 RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
@@ -42,11 +42,11 @@ void fileOpen(RuntimeArgs_t *args) {
     }
 }
 
-void runBenchmark(RuntimeArgs_t& userArgs, double (*benchmarkFunction)(const RuntimeArgs_t& args)) {
+void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
     // Force block size for sequential operations to 100 MB irrespective of user selection
     //int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
     int blk_size = userArgs.blk_size;
-    std::vector<std::future<double>> threads;
+    std::vector<std::future<Result_t>> threads;
     for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
         args.thread_id = i;
@@ -59,9 +59,13 @@ void runBenchmark(RuntimeArgs_t& userArgs, double (*benchmarkFunction)(const Run
         threads.push_back(std::async(benchmarkFunction, args));
     }
     double totalThroughput = 0;
+    double totalOps = 0;
     for (auto& t : threads) {
-        totalThroughput += t.get();
+        totalThroughput += t.get().throughput;
+        totalOps += t.get().op_count;
     }
-    cout << userArgs.operation << " " <<  userArgs.opmode << " BLK_SIZE: " << blk_size <<
-            " kB   Throughput = " << totalThroughput << " GB/s" << endl << endl;
+    cout << userArgs.operation << " " <<  userArgs.opmode << endl
+        <<"BLK_SIZE: " << blk_size << " kB" << endl
+        <<"Ops: " << totalOps << endl
+        << "Throughput = " << totalThroughput << " GB/s" << endl << endl;
 }
