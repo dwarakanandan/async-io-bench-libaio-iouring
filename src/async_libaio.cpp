@@ -31,7 +31,15 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
 
-	calculateIoOffsets(args.read_offset, buffer_size, args.opmode, offsets);
+	if (args.opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
+        }
+    }
 
 	aio_context_t ctx;
 	struct iocb cb;

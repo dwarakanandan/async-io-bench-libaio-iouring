@@ -55,5 +55,3 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 void fileOpen(RuntimeArgs_t *args);
 
 void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args));
-
-void calculateIoOffsets(int initialOffset, int bufferSize, std::string opmode, off_t *offsets);

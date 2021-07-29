@@ -30,11 +30,19 @@ Result_t syncio(const RuntimeArgs_t& args) {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops = 0;
     off_t offsets[MAX_OPS];
-    
-    calculateIoOffsets(args.read_offset, buffer_size, args.opmode, offsets);
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
+
+    if (args.opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
+        }
+    }
 
     if (args.operation.compare(READ) == 0) {
         syncioRead(args.fd, buffer, buffer_size, offsets, &ops);
