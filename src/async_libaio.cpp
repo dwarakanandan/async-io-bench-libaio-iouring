@@ -4,7 +4,7 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
-#define MAX_OPS 200
+#define MAX_OPS 10
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -56,7 +56,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	for (size_t i = 0; i < MAX_OPS; i++)
 	{
-		memset(&(cb[i]), 0, sizeof(cb));
+		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
 		cb[i].aio_lio_opcode = IOCB_CMD_PREAD;
 		cb[i].aio_buf = (uint64_t)buffer;
@@ -64,8 +64,6 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		cb[i].aio_nbytes = buffer_size;
 		cbs[i] = &(cb[i]);
 	}
-
-	int c = 10-5;
 
 	ret = io_submit(ctx, 1, cbs);
 	if (ret != 1) {
@@ -79,8 +77,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	double start = getTime();
     while (getTime() - start < RUN_TIME) {
-		ret = io_getevents(ctx, 100, MAX_OPS, events, &timeout);
-		cout << "Getting events: " << ret << endl;
+		ret = io_getevents(ctx, 1, MAX_OPS, events, &timeout);
+		cout << "Got events: " << ret << endl;
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			exit(1);
