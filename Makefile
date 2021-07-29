@@ -9,6 +9,11 @@ BUILD := build
 SOURCES := $(wildcard $(SRC)/*.cpp)
 OBJECTS := $(patsubst $(SRC)/%.cpp, $(BUILD)/%.o, $(SOURCES))
 
+all: setup benchmark
+
+setup:
+	mkdir -p $(BUILD)
+
 benchmark: $(OBJECTS)
 	$(CC) $^ -o build/$@ $(CFLAGS) $(LIBS)
 
