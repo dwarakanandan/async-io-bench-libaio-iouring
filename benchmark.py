@@ -15,11 +15,11 @@ def runBenchmark(lib, threads, op, mode):
         stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
         outputs.append(stream.readline().strip())
 
-for thread in [1, 8]:
+for thread in threads:
     for lib in libs:
         for op in ops:
-            runBenchmark(lib, threads, op, 'seq')
-            runBenchmark(lib, threads, op, 'rand')
+            runBenchmark(lib, thread, op, 'seq')
+            runBenchmark(lib, thread, op, 'rand')
 
 for output in outputs:
     print(output)
