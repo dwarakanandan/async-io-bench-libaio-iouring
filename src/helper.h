@@ -39,6 +39,9 @@ struct RuntimeArgs_t {
 struct Result_t {
   double throughput;
   uint64_t op_count;
+  uint64_t ops_submitted;
+  uint64_t ops_returned;
+  uint64_t ops_failed;
 };
 
 static inline double getTime(void) {
@@ -48,6 +51,9 @@ static inline double getTime(void) {
 }
 
 void printStats(const RuntimeArgs_t& args, const Result_t results);
+void printOpStats(const RuntimeArgs_t& args, const Result_t results);
+
+const char* getErrorMessageWithTid(const RuntimeArgs_t& args, std::string error);
 
 RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 

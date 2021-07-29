@@ -13,8 +13,26 @@ void printStats(const RuntimeArgs_t& args, const Result_t results) {
     stats << "TID:" << args.thread_id
         << " offset:" << args.read_offset / _1GB << "GB"
         << " ops:" << results.op_count
-        << " throughput:" << results.throughput << " GB/s" << endl;
+        << " throughput:" << results.throughput << " GB/s" << endl << endl;
     cout << stats.str();
+}
+
+void printOpStats(const RuntimeArgs_t& args, const Result_t results) {
+	std::stringstream msg;
+	msg << "TID:" << args.thread_id
+		<< " OP_SUBMIT: " << results.ops_submitted << " "
+		<< " OP_RETURNED: " << results.ops_returned << " "
+		<< " OP_FAILED: " << results.ops_failed << endl
+        << " offset:" << args.read_offset / _1GB << "GB"
+        << " ops:" << results.op_count
+        << " throughput:" << results.throughput << " GB/s" << endl << endl;
+	cout << msg.str();
+}
+
+const char* getErrorMessageWithTid(const RuntimeArgs_t& args, std::string error) {
+	std::stringstream msg;
+	msg << "TID:" << args.thread_id << " "<< error;
+	return msg.str().c_str();
 }
 
 RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {

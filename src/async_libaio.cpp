@@ -24,21 +24,6 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 	return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
 
-const char* getErrorMessage(const RuntimeArgs_t& args, std::string error) {
-	std::stringstream msg;
-	msg << "TID:" << args.thread_id << " "<< error;
-	return msg.str().c_str();
-}
-
-void printOpStats(const RuntimeArgs_t& args, int ops_submitted, int ops_returned, int ops_failed) {
-	std::stringstream msg;
-	msg << "TID:" << args.thread_id
-		<< " OP_SUBMIT: " << ops_submitted << " "
-		<< " OP_RETURNED: " << ops_returned << " "
-		<< " OP_FAILED: " << ops_failed << endl;
-	cout << msg.str();
-}
-
 Result_t return_error() {
 	Result_t results;
     results.throughput = 0;
@@ -72,7 +57,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	ret = io_setup(MAX_OPS, &ctx);
 	if (ret < 0) {
-		perror(getErrorMessage(args, "io_setup"));
+		perror(getErrorMessageWithTid(args, "io_setup"));
 		return return_error();
 	}
 
@@ -94,7 +79,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 		ret = io_submit(ctx, MAX_OPS, cbs);
 		if (ret < 0) {
-			perror(getErrorMessage(args, "io_submit"));
+			perror(getErrorMessageWithTid(args, "io_submit"));
 			return return_error();
 		}
 		ops_submitted +=ret;
@@ -116,16 +101,18 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
-		perror(getErrorMessage(args, "io_destroy"));
+		perror(getErrorMessageWithTid(args, "io_destroy"));
 		return return_error();
 	}
 
     Result_t results;
     results.throughput = (((ops_returned-ops_failed) * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     results.op_count = ops_returned-ops_failed;
+	results.ops_submitted = ops_submitted;
+	results.ops_returned = ops_returned;
+	results.ops_failed = ops_failed;
 
-	if (args.debugInfo) printOpStats(args, ops_submitted, ops_returned, ops_failed);
-    if (args.debugInfo) printStats(args, results);
+	if (args.debugInfo) printOpStats(args, results);
     return results;
 }
 
