@@ -1,4 +1,4 @@
-#include "helper.h"
+#include "syncio.h"
 
 using namespace std;
 
@@ -45,19 +45,4 @@ Result_t syncio(const RuntimeArgs_t& args) {
 
     if (args.debugInfo) printStats(args, results);
     return results;
-}
-
-int main(int argc, char const *argv[])
-{
-    if (argc < 3 ) {
-        cout << "syncio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
-        exit(1);
-    }
-
-    RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-    fileOpen(&args);
-
-    runBenchmark(args, syncio);
-
-    return 0;
 }

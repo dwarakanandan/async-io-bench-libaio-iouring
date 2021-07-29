@@ -1,8 +1,4 @@
-#include "helper.h"
-
-#include <inttypes.h>
-#include <sys/syscall.h>
-#include <linux/aio_abi.h>
+#include "async_libaio.h"
 
 using namespace std;
 
@@ -107,19 +103,4 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	if (args.debugInfo) printOpStats(args, results);
     return results;
-}
-
-int main(int argc, char const *argv[])
-{
-    if (argc < 3 ) {
-        cout << "async_libaio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
-        exit(1);
-    }
-
-    RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-    fileOpen(&args);
-
-    runBenchmark(args, async_libaio);
-
-    return 0;
 }
