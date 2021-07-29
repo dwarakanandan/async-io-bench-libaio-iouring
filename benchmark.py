@@ -7,7 +7,7 @@ bsizes = [2, 4, 16, 64, 128, 256, 512, 1024, 2048]
 outputs = []
 
 def runBenchmark(lib, threads, op, mode):
-    print('Running: lib:' + lib + ' threads: ' + threads + ' op: ' + op + ' mode: ' + mode)
+    print('Running: lib:' + lib + ' threads: ' + str(threads) + ' op: ' + op + ' mode: ' + mode)
     for bsize in bsizes:
         stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
         outputs.append(stream.readline().strip())
