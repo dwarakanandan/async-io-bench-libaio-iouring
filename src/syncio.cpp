@@ -1,6 +1,5 @@
 #include "helper.h"
 
-#define MAX_OPS 100000
 using namespace std;
 
 void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
@@ -30,25 +29,14 @@ void syncioWrite(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint
 Result_t syncio(const RuntimeArgs_t& args) {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops = 0;
-    off_t offsets[MAX_OPS];
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
 
-    if (args.opmode.compare(SEQUENTIAL) == 0) {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
-        }
-    } else {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
-        }
-    }
-
     if (args.operation.compare(READ) == 0) {
-        syncioRead(args.fd, buffer, buffer_size, offsets, &ops);
+        syncioRead(args.fd, buffer, buffer_size, args.offsets, &ops);
     } else {
-        syncioWrite(args.fd, buffer, buffer_size, offsets, &ops);
+        syncioWrite(args.fd, buffer, buffer_size, args.offsets, &ops);
     }
 
     Result_t results;

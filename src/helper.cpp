@@ -60,6 +60,18 @@ void fileOpen(RuntimeArgs_t *args) {
     }
 }
 
+void setupIoOffsets(RuntimeArgs_t args) {
+    if (args.opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            args.offsets[i] = args.read_offset + (i * args.blk_size * 1024) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            args.offsets[i] = args.read_offset + (rand() * args.blk_size * 1024) % _100GB;
+        }
+    }
+}
+
 void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
     // Force block size for sequential operations to 100 MB irrespective of user selection
     //int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
@@ -75,6 +87,8 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
         args.operation = userArgs.operation;
         args.opmode = userArgs.opmode;
+        args.offsets = new off_t[MAX_OPS];
+        setupIoOffsets(args);
         threads.push_back(std::async(benchmarkFunction, args));
     }
 
