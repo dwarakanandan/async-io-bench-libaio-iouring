@@ -114,8 +114,6 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 	}
 
-	if (args.debugInfo) printOpStats(args, ops_submitted, ops_returned, ops_failed);
-
 	ret = io_destroy(ctx);
 	if (ret < 0) {
 		perror(getErrorMessage(args, "io_destroy"));
@@ -126,6 +124,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
     results.throughput = (((ops_returned-ops_failed) * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     results.op_count = ops_returned-ops_failed;
 
+	if (args.debugInfo) printOpStats(args, ops_submitted, ops_returned, ops_failed);
     if (args.debugInfo) printStats(args, results);
     return results;
 }
