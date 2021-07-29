@@ -67,7 +67,7 @@ int main(int argc, char const *argv[])
     srand(time(NULL));
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-    fileOpen(args);
+    fileOpen(&args);
 
     runBenchmark(args, syncio);
 

@@ -45,6 +45,6 @@ void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops);
 
 RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 
-void fileOpen(RuntimeArgs_t args);
+void fileOpen(RuntimeArgs_t *args);
 
 void runBenchmark(RuntimeArgs_t& userArgs, double (*benchmarkFunction)(const RuntimeArgs_t& args));
