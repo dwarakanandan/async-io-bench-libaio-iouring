@@ -27,9 +27,12 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	aio_context_t ctx;
 	struct iocb cb;
 	struct iocb *cbs[1];
-	char data[100];
 	struct io_event events[1];
 	int ret;
+
+	int buffer_size = 100;
+	char* buffer = (char *) aligned_alloc(1024, buffer_size);
+    memset(buffer, '1', buffer_size);
 
 	ctx = 0;
 
@@ -42,7 +45,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	memset(&cb, 0, sizeof(cb));
 	cb.aio_fildes = args.fd;
 	cb.aio_lio_opcode = IOCB_CMD_PREAD;
-	cb.aio_buf = (uint64_t)data;
+	cb.aio_buf = (uint64_t)buffer;
 	cb.aio_offset = 0;
 	cb.aio_nbytes = 100;
 
@@ -60,7 +63,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	for (size_t i = 0; i < 10; i++)
     {
-        printf("%lu: %d %c\n", i, data[i], data[i]);
+        printf("%lu: %d %c\n", i, buffer[i], buffer[i]);
     }
 
 	ret = io_destroy(ctx);
