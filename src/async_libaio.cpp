@@ -30,6 +30,15 @@ const char* getErrorMessage(const RuntimeArgs_t& args, std::string error) {
 	return msg.str().c_str();
 }
 
+void printOpStats(const RuntimeArgs_t& args, int ops_submitted, int ops_returned, int ops_errored) {
+	std::stringstream msg;
+	msg << "TID:" << args.thread_id << " "
+		<< " OP_SUBMIT: " << ops_submitted << " "
+		<< " OP_RETURNED: " << ops_returned << " "
+		<< " OP_ERRORED: " << ops_errored << endl;
+	cout << msg.str();
+}
+
 Result_t return_error() {
 	Result_t results;
     results.throughput = 0;
@@ -39,7 +48,7 @@ Result_t return_error() {
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
-    uint64_t ops = 0;
+    uint64_t ops_submitted = 0, ops_returned = 0, ops_errored = 0;
     off_t offsets[MAX_OPS];
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
@@ -88,26 +97,24 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 			perror(getErrorMessage(args, "io_submit"));
 			return return_error();
 		}
+		ops_submitted +=ret;
 
 		ret = io_getevents(ctx, MAX_OPS, MAX_OPS, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			return return_error();
 		}
-
-		ops+=ret;
+		ops_returned+=ret;
     }
 
-	cout << "Time ended with ops: " << ops << endl;
-
-	for (size_t i = 0; i < ops; i++)
+	for (size_t i = 0; i < ops_returned; i++)
 	{
 		if (events[i].res < 0) {
-			//fprintf(stderr, "Error at event: %ld  errcode: %lld\n", i, events[i].res);
-			//return return_error();
-			ops--;
+			ops_errored++;
 		}
 	}
+
+	if (args.debugInfo) printOpStats(args, ops_submitted, ops_returned, ops_errored);
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
@@ -116,8 +123,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	}
 
     Result_t results;
-    results.throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
-    results.op_count = ops;
+    results.throughput = (((ops_returned-ops_errored) * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+    results.op_count = ops_returned-ops_errored;
 
     if (args.debugInfo) printStats(args, results);
     return results;
