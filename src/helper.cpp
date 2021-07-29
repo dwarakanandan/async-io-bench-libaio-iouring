@@ -102,9 +102,9 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
     }
 
     cout << std::fixed
-        << userArgs.operation << " " <<  userArgs.opmode
-        <<"BLK_SIZE: " << blk_size << " kB"
-        <<"OP_COUNT: " << totalOps
+        << userArgs.operation << " " <<  userArgs.opmode << " "
+        << "BLK_SIZE: " << blk_size << " kB" << " "
+        << "OP_COUNT: " << totalOps << " "
         << "THROUGHPUT: " << totalThroughput << " GB/s" << endl;
 }
 
