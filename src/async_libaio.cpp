@@ -79,14 +79,14 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 			return return_error();
 		}
 		ops_returned+=ret;
-    }
 
-	for (size_t i = 0; i < ops_returned; i++)
-	{
-		if (events[i].res < 0) {
-			ops_failed++;
+		for (size_t i = 0; i < ret; i++)
+		{
+			if (events[i].res < 0) {
+				ops_failed++;
+			}
 		}
-	}
+    }
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
