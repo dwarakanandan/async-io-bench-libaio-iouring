@@ -44,15 +44,11 @@ void fileOpen(RuntimeArgs_t *args) {
 }
 
 void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
-    // Force block size for sequential operations to 100 MB irrespective of user selection
-    //int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
-    int blk_size = userArgs.blk_size;
-
     std::vector<std::future<Result_t>> threads;
     for (int i = 1; i <= userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
         args.thread_id = i;
-        args.blk_size = blk_size;
+        args.blk_size = userArgs.blk_size;
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
@@ -72,7 +68,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
 
     cout << std::fixed
         << userArgs.operation << " " <<  userArgs.opmode << " "
-        << "BLK_SIZE_KB:" << blk_size << " "
+        << "BLK_SIZE_KB:" << userArgs.blk_size << " "
         << "OP_COUNT:" << totalOps << " "
         << "THROUGHPUT_GBPS:" << totalThroughput << endl;
 }
