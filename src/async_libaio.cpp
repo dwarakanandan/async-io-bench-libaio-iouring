@@ -71,7 +71,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	timeout.tv_sec = 1;
 
 	double start = getTime();
-    while (getTime() - start < RUN_TIME) {
+	while (getTime() - start < RUN_TIME) {
 		for (int i = 0; i < args.oio; i++)
 		{
 			cb[i].aio_offset = offsets[ops_submitted+i];
@@ -97,7 +97,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 				ops_failed++;
 			}
 		}
-    }
+	}
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
