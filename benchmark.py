@@ -26,6 +26,7 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
     for oio in oio_sizes:
         stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
         outputs.append(stream.readline().strip())
+    outputs_global.append(outputs)
     for output in outputs:
         print(output)
     print()
