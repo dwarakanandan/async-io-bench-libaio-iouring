@@ -57,16 +57,6 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		return return_error();
 	}
 
-	for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
-	{
-		memset(&(cb[i]), 0, sizeof(cb[i]));
-		cb[i].aio_fildes = args.fd;
-		cb[i].aio_lio_opcode = isRead? IOCB_CMD_PREAD: IOCB_CMD_PWRITE;
-		cb[i].aio_buf = (uint64_t)buffer;
-		cb[i].aio_nbytes = buffer_size;
-		cbs[i] = &(cb[i]);
-	}
-
 	timespec timeout;
 	timeout.tv_sec = 1;
 
@@ -74,7 +64,13 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
     while (getTime() - start < RUN_TIME) {
 		for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
 		{
+			memset(&(cb[i]), 0, sizeof(cb[i]));
+			cb[i].aio_fildes = args.fd;
+			cb[i].aio_lio_opcode = isRead? IOCB_CMD_PREAD: IOCB_CMD_PWRITE;
+			cb[i].aio_buf = (uint64_t)buffer;
+			cb[i].aio_nbytes = buffer_size;
 			cb[i].aio_offset = offsets[ops_submitted+i];
+			cbs[i] = &(cb[i]);
 		}
 
 		ret = io_submit(ctx, ASYNC_OP_BATCH_SIZE, cbs);
