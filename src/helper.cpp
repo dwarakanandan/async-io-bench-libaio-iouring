@@ -79,7 +79,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
     }
 
     double totalThroughput = 0;
-    double totalOps = 0;
+    uint64_t totalOps = 0;
     for (auto& t : threads) {
         auto results = t.get();
         totalThroughput += results.throughput;
