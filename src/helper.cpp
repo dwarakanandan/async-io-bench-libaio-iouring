@@ -36,6 +36,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
 
 void fileOpen(RuntimeArgs_t args) {
     args.fd = open(args.filename.c_str(), O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
+    cout << "opened FD: " << args.fd << std::endl;
     if (args.fd < 0) {
         perror("Open error");
         exit(-1);
