@@ -36,6 +36,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
     off_t offsets[MAX_OPS];
+	bool isRead = (args.operation.compare(READ) == 0);
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
@@ -66,7 +67,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	{
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
-		cb[i].aio_lio_opcode = IOCB_CMD_PWRITE;
+		cb[i].aio_lio_opcode = isRead? IOCB_CMD_PREAD: IOCB_CMD_PWRITE;
 		cb[i].aio_buf = (uint64_t)buffer;
 		cb[i].aio_nbytes = buffer_size;
 		cbs[i] = &(cb[i]);
