@@ -104,7 +104,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	{
 		if (events[i].res < 0) {
 			fprintf(stderr, "Error at event: %ld  errcode: %lld\n", i, events[i].res);
-			return return_error();
+			//return return_error();
+			ops--;
 		}
 	}
 
