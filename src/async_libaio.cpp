@@ -4,8 +4,8 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
-#define MAX_OPS 200000
-#define OP_BATCH_SIZE 10
+#define MAX_OPS 300000
+#define ASYNC_OP_BATCH_SIZE 10
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -52,18 +52,18 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
     }
 
 	aio_context_t ctx = 0;
-	struct iocb cb[OP_BATCH_SIZE];
-	struct iocb *cbs[OP_BATCH_SIZE];
-	struct io_event events[OP_BATCH_SIZE];
+	struct iocb cb[ASYNC_OP_BATCH_SIZE];
+	struct iocb *cbs[ASYNC_OP_BATCH_SIZE];
+	struct io_event events[ASYNC_OP_BATCH_SIZE];
 	int ret;
 
-	ret = io_setup(OP_BATCH_SIZE, &ctx);
+	ret = io_setup(ASYNC_OP_BATCH_SIZE, &ctx);
 	if (ret < 0) {
 		perror(getErrorMessageWithTid(args, "io_setup"));
 		return return_error();
 	}
 
-	for (size_t i = 0; i < OP_BATCH_SIZE; i++)
+	for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
 	{
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
@@ -78,19 +78,19 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	double start = getTime();
     while (getTime() - start < RUN_TIME) {
-		for (size_t i = 0; i < OP_BATCH_SIZE; i++)
+		for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
 		{
 			cb[i].aio_offset = offsets[ops_submitted+i];
 		}
 
-		ret = io_submit(ctx, OP_BATCH_SIZE, cbs);
+		ret = io_submit(ctx, ASYNC_OP_BATCH_SIZE, cbs);
 		if (ret < 0) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
 			return return_error();
 		}
 		ops_submitted +=ret;
 
-		ret = io_getevents(ctx, OP_BATCH_SIZE, OP_BATCH_SIZE, events, &timeout);
+		ret = io_getevents(ctx, ASYNC_OP_BATCH_SIZE, ASYNC_OP_BATCH_SIZE, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			return return_error();
