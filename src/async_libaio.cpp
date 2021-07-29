@@ -98,6 +98,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		ops+=ret;
     }
 
+	cout << "Time ended with ops: " << ops << endl;
+
 	for (size_t i = 0; i < ops; i++)
 	{
 		if (events[i].res < 0) {
