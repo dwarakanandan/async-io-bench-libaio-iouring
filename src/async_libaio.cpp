@@ -61,13 +61,12 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	ret = io_getevents(ctx, 1, 1, events, NULL);
 	printf("events: %d\n", ret);
 
-	// auto c=(struct iocb*)events[0].obj;
-	cout << events[0].res << endl;
+	cout << "event rescode: "<< events[0].res << endl;
 
-	// for (size_t i = 0; i < 10; i++)
-    // {
-    //     printf("%lu: %d %c\n", i, ((uint64_t*)c->aio_buf)[0], ((uint64_t*)c->aio_buf)[0]);
-    // }
+	for (size_t i = 0; i < 10; i++)
+    {
+        printf("%lu: %d %c\n", i, buffer[i], buffer[i]);
+    }
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
@@ -82,79 +81,21 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	return results;
 }
 
-void dummy() {
-
-	int fd = open("/dev/md0", O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR);
-	if (fd < 0) {
-		perror("open error");
-		exit(-1);
-	}
-	cout << "fd: " << fd << endl;
-
-	aio_context_t ctx;
-	struct iocb cb;
-	struct iocb *cbs[1];
-	struct io_event events[1];
-	int ret;
-
-	int buffer_size = 100;
-	char* buffer = new char[buffer_size];
-    memset(buffer, '1', buffer_size);
-
-	ctx = 0;
-
-	ret = io_setup(128, &ctx);
-	if (ret < 0) {
-		perror("io_setup");
-		exit(-1);
-	}
-
-	memset(&cb, 0, sizeof(cb));
-	cb.aio_fildes = fd;
-	cb.aio_lio_opcode = IOCB_CMD_PREAD;
-	cb.aio_buf = (uint64_t)buffer;
-	cb.aio_offset = 0;
-	cb.aio_nbytes = 100;
-
-	cbs[0] = &cb;
-
-	ret = io_submit(ctx, 1, cbs);
-	if (ret != 1) {
-		if (ret < 0) perror("io_submit");
-		else fprintf(stderr, "io_submit failed\n");
-		exit(-1);
-	}
-
-	ret = io_getevents(ctx, 1, 1, events, NULL);
-	printf("events: %d\n", ret);
-
-	cout << "Event rescode: " << events[0].res << endl;
-
-	for (size_t i = 0; i < 10; i++)
-    {
-        printf("%lu: %d %c\n", i, buffer[0], buffer[0]);
-    }
-
-	ret = io_destroy(ctx);
-	if (ret < 0) {
-		perror("io_destroy");
-		exit(-1);
-	}
-}
-
 int main(int argc, char const *argv[])
 {
-    // if (argc < 3 ) {
-    //     cout << "async_libaio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
-    //     exit(1);
-    // }
+    if (argc < 3 ) {
+        cout << "async_libaio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
+        exit(1);
+    }
 
-    // srand(time(NULL));
+    srand(time(NULL));
 
-    // RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-    // fileOpen(&args);
+    RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
+    //fileOpen(&args);
 
-    // runBenchmark(args, async_libaio);
-	dummy();
+	args.fd = open(args.filename.c_str(), O_RDWR | O_CREAT , S_IRUSR | S_IWUSR);
+
+    runBenchmark(args, async_libaio);
+
     return 0;
 }
