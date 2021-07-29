@@ -2,30 +2,25 @@ import os
 
 base_command = 'sudo ./build/benchmark --file /dev/md0 '
 
-bsizes = [2, 16, 64, 256, 512, 1024, 2048]
-
-def runBenchmark(lib):
-    for bsize in bsizes:
-        stream = os.popen(base_command + '--threads 1 --bsize ' + str(bsize) + ' --op read --mode seq --lib ' + lib)
-        outputs.append(stream.readline().strip())
-
-    for bsize in bsizes:
-        stream = os.popen(base_command + '--threads 1 --bsize ' + str(bsize) + ' --op read --mode rand --lib' + lib)
-        outputs.append(stream.readline().strip())
-
-    for bsize in bsizes:
-        stream = os.popen(base_command + '--threads 1 --bsize ' + str(bsize) + ' --op write --mode seq --lib' + lib)
-        outputs.append(stream.readline().strip())
-
-    for bsize in bsizes:
-        stream = os.popen(base_command + '--threads 1 --bsize ' + str(bsize) + ' --op write --mode rand --lib' + lib)
-        outputs.append(stream.readline().strip())
-
+bsizes = [2, 4, 16, 64, 128, 256, 512, 1024, 2048]
 
 outputs = []
 
-runBenchmark('syncio')
-runBenchmark('libaio')
+def runBenchmark(lib, threads, op, mode):
+    print('Running: lib:' + lib + ' threads: ' + threads + ' op: ' + op + ' mode: ' + mode)
+    for bsize in bsizes:
+        stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
+        outputs.append(stream.readline().strip())
+
+
+runBenchmark('syncio', 1, 'read', 'seq')
+runBenchmark('syncio', 1, 'read', 'rand')
+runBenchmark('syncio', 1, 'write', 'seq')
+runBenchmark('syncio', 1, 'write', 'rand')
+runBenchmark('libaio', 1, 'read', 'seq')
+runBenchmark('libaio', 1, 'read', 'rand')
+runBenchmark('libaio', 1, 'write', 'seq')
+runBenchmark('libaio', 1, 'write', 'rand')
 
 for output in outputs:
     print(output)
