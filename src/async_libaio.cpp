@@ -4,6 +4,7 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
+#define MAX_OPS 50000
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
