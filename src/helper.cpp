@@ -86,7 +86,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         totalOps += results.op_count;
     }
 
-    cout << endl
+    cout << std::fixed << endl
         << userArgs.operation << " " <<  userArgs.opmode << endl
         <<"BLK_SIZE: " << blk_size << " kB" << endl
         <<"OP_COUNT: " << totalOps << endl

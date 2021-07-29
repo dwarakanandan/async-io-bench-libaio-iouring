@@ -70,7 +70,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		{
 			memset(&(cb[i]), 0, sizeof(cb[i]));
 			cb[i].aio_fildes = args.fd;
-			cb[i].aio_lio_opcode = IOCB_CMD_PREAD;
+			cb[i].aio_lio_opcode = IOCB_CMD_PWRITE;
 			cb[i].aio_buf = (uint64_t)buffer;
 			cb[i].aio_offset = offsets[i];
 			cb[i].aio_nbytes = buffer_size;
