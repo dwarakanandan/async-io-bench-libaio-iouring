@@ -30,7 +30,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	struct io_event events[1];
 	int ret;
 
-	int buffer_size = 100;
+	int buffer_size = 1024;
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
 
@@ -47,7 +47,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	cb.aio_lio_opcode = IOCB_CMD_PREAD;
 	cb.aio_buf = (uint64_t)buffer;
 	cb.aio_offset = 0;
-	cb.aio_nbytes = 100;
+	cb.aio_nbytes = 1024;
 
 	cbs[0] = &cb;
 
@@ -91,9 +91,9 @@ int main(int argc, char const *argv[])
     srand(time(NULL));
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
-    //fileOpen(&args);
+    fileOpen(&args);
 
-	args.fd = open(args.filename.c_str(), O_RDWR | O_CREAT , S_IRUSR | S_IWUSR);
+	//args.fd = open(args.filename.c_str(), O_RDWR | O_CREAT , S_IRUSR | S_IWUSR);
 
     runBenchmark(args, async_libaio);
 
