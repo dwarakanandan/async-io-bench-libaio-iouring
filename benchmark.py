@@ -48,7 +48,7 @@ def mainBenchmark():
 
 def oioBenchmark():
     for oio in oio_sizes:
-        runBenchmark('libaio', 1, 'read', 'seq', 16, oio)
-        runBenchmark('libaio', 8, 'read', 'seq', 16, oio)
+        runBenchmark('libaio', 1, 'read', 'seq', 2048, oio)
+        runBenchmark('libaio', 8, 'read', 'seq', 2048, oio)
 
 oioBenchmark()
