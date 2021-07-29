@@ -21,19 +21,19 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 
 Result_t return_error() {
 	Result_t results;
-    results.throughput = 0;
-    results.op_count = 0;
+	results.throughput = 0;
+	results.op_count = 0;
 	return results;
 }
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
-    uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
+	uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
 	bool isRead = (args.operation.compare(READ) == 0);
 	off_t offsets[MAX_OPS];
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
-    memset(buffer, 'A', buffer_size);
+	memset(buffer, 'A', buffer_size);
 
 	if (args.opmode.compare(SEQUENTIAL) == 0) {
         for(int i=0; i < MAX_OPS; i++) {
@@ -72,11 +72,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-		for (int i = 0; i < args.oio; i++)
-		{
-			cb[i].aio_offset = offsets[ops_submitted+i];
-		}
-
+		// Submit args.oio events
+		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = offsets[ops_submitted+i];
 		ret = io_submit(ctx, args.oio, cbs);
 		if (ret < 0) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
@@ -84,6 +81,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_submitted +=ret;
 
+		// Wait for args.oio events to complete
 		ret = io_getevents(ctx, args.oio, args.oio, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
@@ -91,6 +89,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_returned+=ret;
 
+		// Check event result codes
 		for (int i = 0; i < ret; i++)
 		{
 			if (events[i].res < 0) {
