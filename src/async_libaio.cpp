@@ -4,7 +4,7 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
-#define MAX_OPS 1000
+#define MAX_OPS 10000
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -22,6 +22,16 @@ inline int io_submit(aio_context_t ctx, long nr, struct iocb **iocbpp) {
 inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 		struct io_event *events, struct timespec *timeout) {
 	return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
+}
+
+Result_t return_error(const RuntimeArgs_t& args) {
+	std::stringstream msg;
+	msg << "Thread: " << args.thread_id << " encountered an error" << endl;
+	cout << msg.str();
+	Result_t results;
+    results.throughput = 0;
+    results.op_count = 0;
+	return results;
 }
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
@@ -51,7 +61,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	ret = io_setup(MAX_OPS, &ctx);
 	if (ret < 0) {
 		perror("io_setup");
-		exit(-1);
+		return return_error(args);
 	}
 
 	for (size_t i = 0; i < MAX_OPS; i++)
@@ -69,7 +79,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	cout << "Submitted events: " << ret << endl;
 	if (ret < 0) {
 		perror("io_submit");
-		exit(-1);
+		return return_error(args);
 	}
 
 	timespec timeout;
@@ -80,7 +90,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		ret = io_getevents(ctx, 0, MAX_OPS, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
-			exit(1);
+			return return_error(args);
 		}
 		ops+=ret;
     }
@@ -89,14 +99,14 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	{
 		if (events[i].res < 0) {
 			fprintf(stderr, "Error at event: %ld  errcode: %lld\n", i, events[i].res);
-			exit(1);
+			return return_error(args);
 		}
 	}
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
 		perror("io_destroy");
-		exit(-1);
+		return return_error(args);
 	}
 
     Result_t results;
