@@ -32,7 +32,7 @@ const char* getErrorMessage(const RuntimeArgs_t& args, std::string error) {
 
 void printOpStats(const RuntimeArgs_t& args, int ops_submitted, int ops_returned, int ops_errored) {
 	std::stringstream msg;
-	msg << "TID:" << args.thread_id << " "
+	msg << "TID:" << args.thread_id
 		<< " OP_SUBMIT: " << ops_submitted << " "
 		<< " OP_RETURNED: " << ops_returned << " "
 		<< " OP_ERRORED: " << ops_errored << endl;
