@@ -29,14 +29,25 @@ void syncioWrite(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint
 Result_t syncio(const RuntimeArgs_t& args) {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops = 0;
+    off_t offsets[MAX_OPS];
+
+    if (args.opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (i * args.blk_size * 1024) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (rand() * args.blk_size * 1024) % _100GB;
+        }
+    }
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, 'A', buffer_size);
 
     if (args.operation.compare(READ) == 0) {
-        syncioRead(args.fd, buffer, buffer_size, args.offsets, &ops);
+        syncioRead(args.fd, buffer, buffer_size, offsets, &ops);
     } else {
-        syncioWrite(args.fd, buffer, buffer_size, args.offsets, &ops);
+        syncioWrite(args.fd, buffer, buffer_size, offsets, &ops);
     }
 
     Result_t results;

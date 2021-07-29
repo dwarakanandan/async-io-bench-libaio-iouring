@@ -30,9 +30,20 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
 	bool isRead = (args.operation.compare(READ) == 0);
+	off_t offsets[MAX_OPS];
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, 'A', buffer_size);
+
+	if (args.opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (i * args.blk_size * 1024) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (rand() * args.blk_size * 1024) % _100GB;
+        }
+    }
 
 	aio_context_t ctx = 0;
 	struct iocb cb[ASYNC_OP_BATCH_SIZE];
@@ -63,7 +74,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
     while (getTime() - start < RUN_TIME) {
 		for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
 		{
-			cb[i].aio_offset = args.offsets[ops_submitted+i];
+			cb[i].aio_offset = offsets[ops_submitted+i];
 		}
 
 		ret = io_submit(ctx, ASYNC_OP_BATCH_SIZE, cbs);

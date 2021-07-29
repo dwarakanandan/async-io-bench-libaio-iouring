@@ -41,7 +41,6 @@ struct RuntimeArgs_t {
     int fd;
     int blk_size;
     off_t read_offset;
-    off_t *offsets;
     bool debugInfo;
     std::string operation;
     std::string opmode;

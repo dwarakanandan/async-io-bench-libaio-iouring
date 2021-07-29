@@ -52,6 +52,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
 int main(int argc, char const *argv[])
 {
     fileNameCheck(argc, argv);
+    srand(time(NULL));
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
