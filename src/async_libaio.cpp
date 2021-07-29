@@ -80,7 +80,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_returned+=ret;
 
-		for (size_t i = 0; i < ret; i++)
+		for (int i = 0; i < ret; i++)
 		{
 			if (events[i].res < 0) {
 				ops_failed++;
