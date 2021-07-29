@@ -43,6 +43,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
     }
 
 	aio_context_t ctx = 0;
+	struct iocb cb[MAX_OPS];
 	struct iocb *cbs[MAX_OPS];
 	struct io_event events[MAX_OPS];
 	int ret;
@@ -55,14 +56,13 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	for (size_t i = 0; i < MAX_OPS; i++)
 	{
-		struct iocb cb;
-		memset(&cb, 0, sizeof(cb));
-		cb.aio_fildes = args.fd;
-		cb.aio_lio_opcode = IOCB_CMD_PREAD;
-		cb.aio_buf = (uint64_t)buffer;
-		cb.aio_offset = offsets[i];
-		cb.aio_nbytes = buffer_size;
-		cbs[i] = &cb;
+		memset(&(cb[i]), 0, sizeof(cb));
+		cb[i].aio_fildes = args.fd;
+		cb[i].aio_lio_opcode = IOCB_CMD_PREAD;
+		cb[i].aio_buf = (uint64_t)buffer;
+		cb[i].aio_offset = offsets[i];
+		cb[i].aio_nbytes = buffer_size;
+		cbs[i] = &(cb[i]);
 	}
 
 	ret = io_submit(ctx, 1, cbs);
