@@ -31,7 +31,7 @@ Result_t syncio(const RuntimeArgs_t& args) {
     uint64_t ops = 0;
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
-    memset(buffer, '1', buffer_size);
+    memset(buffer, 'A', buffer_size);
 
     if (args.operation.compare(READ) == 0) {
         syncioRead(args.fd, buffer, buffer_size, args.offsets, &ops);
@@ -40,7 +40,7 @@ Result_t syncio(const RuntimeArgs_t& args) {
     }
 
     Result_t results;
-    results.throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+    results.throughput = calculateThroughputGbps(ops, buffer_size);
     results.op_count = ops;
 
     if (args.debugInfo) printStats(args, results);
@@ -53,8 +53,6 @@ int main(int argc, char const *argv[])
         cout << "syncio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
         exit(1);
     }
-
-    srand(time(NULL));
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);

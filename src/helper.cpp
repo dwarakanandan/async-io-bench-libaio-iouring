@@ -61,6 +61,7 @@ void fileOpen(RuntimeArgs_t *args) {
 }
 
 void setupIoOffsets(RuntimeArgs_t args) {
+    srand(time(NULL));
     if (args.opmode.compare(SEQUENTIAL) == 0) {
         for(int i=0; i < MAX_OPS; i++) {
             args.offsets[i] = args.read_offset + (i * args.blk_size * 1024) % _100GB;
@@ -105,4 +106,8 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         <<"BLK_SIZE: " << blk_size << " kB" << endl
         <<"OP_COUNT: " << totalOps << endl
         << "THROUGHPUT: " << totalThroughput << " GB/s" << endl << endl;
+}
+
+double calculateThroughputGbps(uint64_t ops, size_t buffer_size) {
+    return ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
 }

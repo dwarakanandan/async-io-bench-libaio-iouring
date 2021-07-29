@@ -36,17 +36,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	bool isRead = (args.operation.compare(READ) == 0);
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
-    memset(buffer, '1', buffer_size);
-
-	// if (args.opmode.compare(SEQUENTIAL) == 0) {
-    //     for(int i=0; i < MAX_OPS; i++) {
-    //         offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
-    //     }
-    // } else {
-    //     for(int i=0; i < MAX_OPS; i++) {
-    //         offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
-    //     }
-    // }
+    memset(buffer, 'A', buffer_size);
 
 	aio_context_t ctx = 0;
 	struct iocb cb[ASYNC_OP_BATCH_SIZE];
@@ -109,7 +99,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	}
 
     Result_t results;
-    results.throughput = (((ops_returned-ops_failed) * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+    results.throughput = calculateThroughputGbps(ops_returned-ops_failed, buffer_size);
     results.op_count = ops_returned-ops_failed;
 	results.ops_submitted = ops_submitted;
 	results.ops_returned = ops_returned;
@@ -125,8 +115,6 @@ int main(int argc, char const *argv[])
         cout << "async_libaio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
         exit(1);
     }
-
-    srand(time(NULL));
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);

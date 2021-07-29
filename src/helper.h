@@ -63,3 +63,5 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 void fileOpen(RuntimeArgs_t *args);
 
 void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args));
+
+double calculateThroughputGbps(uint64_t ops, size_t buffer_size);
