@@ -61,9 +61,12 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	ret = io_getevents(ctx, 1, 1, events, NULL);
 	printf("events: %d\n", ret);
 
+	auto c=(struct iocb*)events[0].obj;
+	cout << events[0].res << endl;
+
 	for (size_t i = 0; i < 10; i++)
     {
-        printf("%lu: %d %c\n", i, buffer[i], buffer[i]);
+        printf("%lu: %d %c\n", i, ((uint64_t*)c->aio_buf)[0], ((uint64_t*)c->aio_buf)[0]);
     }
 
 	ret = io_destroy(ctx);
