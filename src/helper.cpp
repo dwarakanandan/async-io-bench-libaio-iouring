@@ -74,3 +74,15 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         <<"OP_COUNT: " << totalOps << endl
         << "THROUGHPUT: " << totalThroughput << " GB/s" << endl << endl;
 }
+
+void calculateIoOffsets(int initialOffset, int bufferSize, std::string opmode, off_t *offsets) {
+    if (opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = initialOffset + (i * bufferSize) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = initialOffset + (rand() * bufferSize) % _100GB;
+        }
+    }
+}

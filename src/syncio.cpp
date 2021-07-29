@@ -2,12 +2,9 @@
 
 using namespace std;
 
-#define MAX_OPS 200000
-#define RUN_TIME 2
-
 void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
-    double start = gettime();
-    while (gettime() - start < RUN_TIME) {
+    double start = getTime();
+    while (getTime() - start < RUN_TIME) {
         ssize_t readCount = pread(fd, buffer, buffer_size, offsets[*ops]);
         if(readCount < 0) {
             perror("Read error");
@@ -18,8 +15,8 @@ void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint6
 }
 
 void syncioWrite(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
-    double start = gettime();
-    while (gettime() - start < RUN_TIME) {
+    double start = getTime();
+    while (getTime() - start < RUN_TIME) {
         ssize_t writeCount = pwrite(fd, buffer, buffer_size, offsets[*ops]);
         if(writeCount < 0) {
             perror("Write error");
@@ -34,15 +31,7 @@ Result_t syncio(const RuntimeArgs_t& args) {
     uint64_t ops = 0;
     off_t offsets[MAX_OPS];
     
-    if (args.opmode.compare(SEQUENTIAL) == 0) {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
-        }
-    } else {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
-        }
-    }
+    calculateIoOffsets(args.read_offset, buffer_size, args.opmode, offsets);
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
@@ -52,10 +41,9 @@ Result_t syncio(const RuntimeArgs_t& args) {
     } else {
         syncioWrite(args.fd, buffer, buffer_size, offsets, &ops);
     }
-    double throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
 
     Result_t results;
-    results.throughput = throughput;
+    results.throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
     results.op_count = ops;
 
     if (args.debugInfo) printStats(args, results);

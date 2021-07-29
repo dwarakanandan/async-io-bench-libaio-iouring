@@ -4,8 +4,6 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
-#define MAX_OPS 1000
-
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -32,16 +30,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
-    
-    if (args.opmode.compare(SEQUENTIAL) == 0) {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
-        }
-    } else {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
-        }
-    }
+
+	calculateIoOffsets(args.read_offset, buffer_size, args.opmode, offsets);
 
 	aio_context_t ctx;
 	struct iocb cb;
@@ -75,10 +65,28 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		exit(-1);
 	}
 
-	ret = io_getevents(ctx, 1, 1, events, NULL);
+	ret = io_getevents(ctx, 100, MAX_OPS, events, NULL);
 	printf("events: %d\n", ret);
 
 	cout << "event rescode: "<< events[0].res << endl;
+
+	double start = getTime();
+    while (getTime() - start < RUN_TIME) {
+		ret = io_getevents(ctx, 100, MAX_OPS, events, NULL);
+		if (ret < 0) {
+			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
+			exit(1);
+		}
+		ops+=100;
+    }
+
+	for (size_t i = 0; i < ops; i++)
+	{
+		if (events[i].res < 0) {
+			fprintf(stderr, "Error at event: %ld  errcode: %lld\n", i, events[i].res);
+			exit(1);
+		}
+	}
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
@@ -86,11 +94,12 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		exit(-1);
 	}
 
-	Result_t results;
-    results.throughput = 1;
-    results.op_count = 1;
+    Result_t results;
+    results.throughput = ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
+    results.op_count = ops;
 
-	return results;
+    if (args.debugInfo) printStats(args, results);
+    return results;
 }
 
 int main(int argc, char const *argv[])

@@ -16,6 +16,8 @@
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
+#define RUN_TIME 2
+#define MAX_OPS 200000
 
 extern const std::string SEQUENTIAL;
 extern const std::string RANDOM;
@@ -40,7 +42,7 @@ struct Result_t {
   uint64_t op_count;
 };
 
-static inline double gettime(void) {
+static inline double getTime(void) {
   struct timeval now_tv;
   gettimeofday (&now_tv, NULL);
   return ((double)now_tv.tv_sec) + ((double)now_tv.tv_usec)/1000000.0;
@@ -53,3 +55,5 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
 void fileOpen(RuntimeArgs_t *args);
 
 void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args));
+
+void calculateIoOffsets(int initialOffset, int bufferSize, std::string opmode, off_t *offsets);
