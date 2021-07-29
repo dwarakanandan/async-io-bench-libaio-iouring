@@ -23,39 +23,25 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 	return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
 
-void asyncio() {
-	
-}
-
-int main(int argc, char *argv[]) {
+Result_t async_libaio(const RuntimeArgs_t& args) {
 	aio_context_t ctx;
 	struct iocb cb;
 	struct iocb *cbs[1];
 	char data[100];
 	struct io_event events[1];
 	int ret;
-	int fd;
-
-	fd = open("/dev/md0", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-	if (fd < 0) {
-		perror("open");
-		return -1;
-	}
 
 	ctx = 0;
 
 	ret = io_setup(128, &ctx);
 	if (ret < 0) {
 		perror("io_setup");
-		return -1;
+		exit(-1);
 	}
 
-	/* setup I/O control block */
 	memset(&cb, 0, sizeof(cb));
-	cb.aio_fildes = fd;
+	cb.aio_fildes = args.fd;
 	cb.aio_lio_opcode = IOCB_CMD_PREAD;
-
-	/* command-specific options */
 	cb.aio_buf = (uint64_t)data;
 	cb.aio_offset = 0;
 	cb.aio_nbytes = 100;
@@ -66,30 +52,43 @@ int main(int argc, char *argv[]) {
 	if (ret != 1) {
 		if (ret < 0) perror("io_submit");
 		else fprintf(stderr, "io_submit failed\n");
-		return -1;
+		exit(-1);
 	}
 
-	/* get reply */
 	ret = io_getevents(ctx, 1, 1, events, NULL);
 	printf("events: %d\n", ret);
 
-    for (size_t i = 0; i < 10; i++)
+	for (size_t i = 0; i < 10; i++)
     {
         printf("%lu: %d %c\n", i, data[i], data[i]);
     }
-    
-
-    struct timespec ts = timespec();
-    ts.tv_sec = 5;
-
-    ret = io_getevents(ctx, 1, 1, events, &ts);
-	printf("events: %d\n", ret);
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
 		perror("io_destroy");
-		return -1;
+		exit(-1);
 	}
-    cout << gettime() << std::endl;
-	return 0;
+
+	Result_t results;
+    results.throughput = 1;
+    results.op_count = 1;
+
+	return results;
+}
+
+int main(int argc, char const *argv[])
+{
+    if (argc < 3 ) {
+        cout << "async_libaio --file <file> --threads <threads> --bsize <block_size_kB> --op <r|w> --mode <s|r> --debug" << endl;
+        exit(1);
+    }
+
+    srand(time(NULL));
+
+    RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
+    fileOpen(&args);
+
+    runBenchmark(args, async_libaio);
+
+    return 0;
 }

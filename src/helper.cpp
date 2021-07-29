@@ -46,6 +46,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
     // Force block size for sequential operations to 100 MB irrespective of user selection
     //int blk_size = (strcmp(userArgs.opmode, SEQUENTIAL) == 0) ? 102400: userArgs.blk_size;
     int blk_size = userArgs.blk_size;
+
     std::vector<std::future<Result_t>> threads;
     for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
@@ -58,6 +59,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         args.opmode = userArgs.opmode;
         threads.push_back(std::async(benchmarkFunction, args));
     }
+
     double totalThroughput = 0;
     double totalOps = 0;
     for (auto& t : threads) {
@@ -65,8 +67,10 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         totalThroughput += results.throughput;
         totalOps += results.op_count;
     }
-    cout << userArgs.operation << " " <<  userArgs.opmode << endl
+
+    cout << endl
+        << userArgs.operation << " " <<  userArgs.opmode << endl
         <<"BLK_SIZE: " << blk_size << " kB" << endl
-        <<"Ops: " << totalOps << endl
-        << "Throughput = " << totalThroughput << " GB/s" << endl << endl;
+        <<"OP_COUNT: " << totalOps << endl
+        << "THROUGHPUT: " << totalThroughput << " GB/s" << endl << endl;
 }
