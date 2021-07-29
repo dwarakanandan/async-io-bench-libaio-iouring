@@ -20,13 +20,15 @@ oio_sizes = [1, 10, 50, 100, 500, 1000]
 
 outputs_global = []
 
-def runBenchmark(lib, threads, op, mode, bsize, oio):
-    print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize) + ' oio:' + str(oio))
+def runBenchmarkAllOios(lib, threads, op, mode, bsize):
+    print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     outputs = []
-    stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
-    outputs.append(stream.readline().strip())
-    outputs_global.append(outputs)
-    print(outputs[0])
+    for oio in oio_sizes:
+        stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
+        outputs.append(stream.readline().strip())
+    for output in outputs:
+        print(output)
+    print()
         
 
 def runBenchmarkAllBlks(lib, threads, op, mode):
@@ -38,6 +40,7 @@ def runBenchmarkAllBlks(lib, threads, op, mode):
     outputs_global.append(outputs)
     for output in outputs:
         print(output)
+    print()
 
 def mainBenchmark():
     for thread in threads:
@@ -47,8 +50,8 @@ def mainBenchmark():
                 runBenchmarkAllBlks(lib, thread, op, 'rand')
 
 def oioBenchmark():
-    for oio in oio_sizes:
-        runBenchmark('libaio', 1, 'read', 'seq', 2048, oio)
-        runBenchmark('libaio', 8, 'read', 'seq', 2048, oio)
+    for thread in [1, 4, 8]:
+        runBenchmarkAllOios('libaio', 1, 'read', 'seq', 16)
+        runBenchmarkAllOios('libaio', 8, 'read', 'seq', 16)
 
 oioBenchmark()
