@@ -4,7 +4,7 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
-#define MAX_OPS 10
+#define MAX_OPS 1000
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -78,7 +78,6 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	double start = getTime();
     while (getTime() - start < RUN_TIME) {
 		ret = io_getevents(ctx, 0, MAX_OPS, events, &timeout);
-		cout << "Got events: " << ret << endl;
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			exit(1);
