@@ -65,7 +65,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		cbs[i] = &(cb[i]);
 	}
 
-	ret = io_submit(ctx, 1, cbs);
+	ret = io_submit(ctx, MAX_OPS, cbs);
 	if (ret != 1) {
 		if (ret < 0) perror("io_submit");
 		else fprintf(stderr, "io_submit failed\n");
