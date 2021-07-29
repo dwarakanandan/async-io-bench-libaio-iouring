@@ -98,7 +98,7 @@ void dummy() {
 	int ret;
 
 	int buffer_size = 100;
-	char* buffer = (char *) aligned_alloc(1024, buffer_size);
+	char* buffer = new char[buffer_size];
     memset(buffer, '1', buffer_size);
 
 	ctx = 0;
