@@ -89,6 +89,7 @@ void dummy() {
 		perror("open error");
 		exit(-1);
 	}
+	cout << "fd: " << fd << endl;
 
 	aio_context_t ctx;
 	struct iocb cb;
