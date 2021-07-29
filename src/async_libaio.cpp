@@ -4,6 +4,8 @@
 #include <sys/syscall.h>
 #include <linux/aio_abi.h>
 
+#define MAX_OPS 1000
+
 using namespace std;
 
 inline int io_setup(unsigned nr, aio_context_t *ctxp) {
@@ -24,32 +26,47 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 }
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
-	aio_context_t ctx;
-	struct iocb cb;
-	struct iocb *cbs[1];
-	struct io_event events[1];
-	int ret;
+	size_t buffer_size = 1024 * args.blk_size;
+    uint64_t ops = 0;
+    off_t offsets[MAX_OPS];
 
-	int buffer_size = 1024;
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, '1', buffer_size);
+    
+    if (args.opmode.compare(SEQUENTIAL) == 0) {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (i * buffer_size) % _100GB;
+        }
+    } else {
+        for(int i=0; i < MAX_OPS; i++) {
+            offsets[i] = args.read_offset + (rand() * buffer_size) % _100GB;
+        }
+    }
+
+	aio_context_t ctx;
+	struct iocb cb;
+	struct iocb *cbs[MAX_OPS];
+	struct io_event events[MAX_OPS];
+	int ret;
 
 	ctx = 0;
 
-	ret = io_setup(128, &ctx);
+	ret = io_setup(MAX_OPS, &ctx);
 	if (ret < 0) {
 		perror("io_setup");
 		exit(-1);
 	}
 
-	memset(&cb, 0, sizeof(cb));
-	cb.aio_fildes = args.fd;
-	cb.aio_lio_opcode = IOCB_CMD_PREAD;
-	cb.aio_buf = (uint64_t)buffer;
-	cb.aio_offset = 0;
-	cb.aio_nbytes = 1024;
-
-	cbs[0] = &cb;
+	for (size_t i = 0; i < MAX_OPS; i++)
+	{
+		memset(&cb, 0, sizeof(cb));
+		cb.aio_fildes = args.fd;
+		cb.aio_lio_opcode = IOCB_CMD_PREAD;
+		cb.aio_buf = (uint64_t)buffer;
+		cb.aio_offset = offsets[i];
+		cb.aio_nbytes = buffer_size;
+		cbs[i] = &cb;
+	}
 
 	ret = io_submit(ctx, 1, cbs);
 	if (ret != 1) {
@@ -62,11 +79,6 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	printf("events: %d\n", ret);
 
 	cout << "event rescode: "<< events[0].res << endl;
-
-	for (size_t i = 0; i < 10; i++)
-    {
-        printf("%lu: %d %c\n", i, buffer[i], buffer[i]);
-    }
 
 	ret = io_destroy(ctx);
 	if (ret < 0) {
@@ -92,8 +104,6 @@ int main(int argc, char const *argv[])
 
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
-
-	//args.fd = open(args.filename.c_str(), O_RDWR | O_CREAT , S_IRUSR | S_IWUSR);
 
     runBenchmark(args, async_libaio);
 
