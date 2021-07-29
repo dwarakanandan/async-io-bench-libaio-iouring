@@ -61,8 +61,9 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
     double totalThroughput = 0;
     double totalOps = 0;
     for (auto& t : threads) {
-        totalThroughput += t.get().throughput;
-        totalOps += t.get().op_count;
+        auto results = t.get();
+        totalThroughput += results.throughput;
+        totalOps += results.op_count;
     }
     cout << userArgs.operation << " " <<  userArgs.opmode << endl
         <<"BLK_SIZE: " << blk_size << " kB" << endl
