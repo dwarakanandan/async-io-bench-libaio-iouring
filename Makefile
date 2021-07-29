@@ -18,4 +18,4 @@ benchmark: $(OBJECTS)
 	$(CC) $^ -o build/$@ $(CFLAGS) $(LIBS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) -I$(SRC) -c $< -o $@
+	$(CC) -I$(SRC) -c $< -o $@ $(CFLAGS)
