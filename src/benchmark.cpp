@@ -10,6 +10,7 @@ int block_sizes[NUM_BLOCK_SIZES] = {2, 4, 16, 32, 64, 128, 256, 512, 1024, 2048}
 void runIoBenchmark(RuntimeArgs_t args, std::string operation, std::string opmode, int block_size, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
     args.operation = operation;
     args.opmode = opmode;
+    args.blk_size = block_size;
     runBenchmark(args, benchmarkFunction);
 }
 
@@ -30,7 +31,10 @@ int main(int argc, char const *argv[])
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
 
+    cout << "syncio:" << endl;
     runIoBenchmarks(args, syncio);
+
+    cout << "async_libaio:" << endl;
     runIoBenchmarks(args, async_libaio);
 
     return 0;
