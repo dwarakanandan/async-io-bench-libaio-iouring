@@ -31,8 +31,8 @@ int main(int argc, char const *argv[])
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
 
-    cout << endl << "syncio:" << endl;
-    runIoBenchmarks(args, syncio);
+    // cout << endl << "syncio:" << endl;
+    // runIoBenchmarks(args, syncio);
 
     cout << endl << "async_libaio:" << endl;
     runIoBenchmarks(args, async_libaio);
