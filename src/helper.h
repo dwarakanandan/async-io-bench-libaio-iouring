@@ -40,6 +40,7 @@ struct RuntimeArgs_t {
     int thread_count;
     int fd;
     int blk_size;
+    int oio;
     off_t read_offset;
     bool debugInfo;
     std::string operation;

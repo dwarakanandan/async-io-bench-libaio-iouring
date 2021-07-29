@@ -46,18 +46,18 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
     }
 
 	aio_context_t ctx = 0;
-	struct iocb cb[ASYNC_OP_BATCH_SIZE];
-	struct iocb *cbs[ASYNC_OP_BATCH_SIZE];
-	struct io_event events[ASYNC_OP_BATCH_SIZE];
+	struct iocb cb[args.oio];
+	struct iocb *cbs[args.oio];
+	struct io_event events[args.oio];
 	int ret;
 
-	ret = io_setup(ASYNC_OP_BATCH_SIZE, &ctx);
+	ret = io_setup(args.oio, &ctx);
 	if (ret < 0) {
 		perror(getErrorMessageWithTid(args, "io_setup"));
 		return return_error();
 	}
 
-	for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
+	for (int i = 0; i < args.oio; i++)
 	{
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
@@ -72,19 +72,19 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	double start = getTime();
     while (getTime() - start < RUN_TIME) {
-		for (size_t i = 0; i < ASYNC_OP_BATCH_SIZE; i++)
+		for (int i = 0; i < args.oio; i++)
 		{
 			cb[i].aio_offset = offsets[ops_submitted+i];
 		}
 
-		ret = io_submit(ctx, ASYNC_OP_BATCH_SIZE, cbs);
+		ret = io_submit(ctx, args.oio, cbs);
 		if (ret < 0) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
 			return return_error();
 		}
 		ops_submitted +=ret;
 
-		ret = io_getevents(ctx, ASYNC_OP_BATCH_SIZE, ASYNC_OP_BATCH_SIZE, events, &timeout);
+		ret = io_getevents(ctx, args.oio, args.oio, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			return return_error();

@@ -2,9 +2,18 @@ import os
 
 base_command = 'sudo ./build/benchmark --file /dev/md0 '
 
-libs = ['syncio', 'libaio']
-ops = ['read']
-threads = [1, 8]
+libs = []
+# libs.append('syncio')
+libs.append('libaio')
+
+ops = []
+ops.append('read')
+# ops.append('write')
+
+threads = []
+threads.append(1)
+# threads.append(8)
+
 bsizes = [2, 4, 16, 64, 128, 256, 512, 1024, 2048, 102400]
 
 outputs = []
