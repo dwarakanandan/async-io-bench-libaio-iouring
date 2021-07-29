@@ -89,7 +89,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 			return return_error();
 		}
 
-		ret = io_getevents(ctx, 0, MAX_OPS, events, &timeout);
+		ret = io_getevents(ctx, MAX_OPS, MAX_OPS, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			return return_error();
