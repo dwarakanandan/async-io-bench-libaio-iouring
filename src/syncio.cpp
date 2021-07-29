@@ -1,6 +1,6 @@
 #include "helper.h"
 
-#define MAX_OPS 200000
+#define MAX_OPS 100000
 using namespace std;
 
 void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {

@@ -16,7 +16,7 @@
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
-#define RUN_TIME 2
+#define RUN_TIME 1
 
 extern const std::string SEQUENTIAL;
 extern const std::string RANDOM;
