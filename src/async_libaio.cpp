@@ -26,7 +26,7 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 
 const char* getErrorMessage(const RuntimeArgs_t& args, std::string error) {
 	std::stringstream msg;
-	msg << "TID: " << args.thread_id << " "<< error;
+	msg << "TID:" << args.thread_id << " "<< error;
 	return msg.str().c_str();
 }
 
@@ -86,7 +86,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	}
 
 	timespec timeout;
-	timeout.tv_sec = 5;
+	timeout.tv_sec = 1;
 
 	double start = getTime();
     while (getTime() - start < RUN_TIME) {
