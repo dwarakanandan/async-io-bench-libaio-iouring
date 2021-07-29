@@ -58,6 +58,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
         args.operation = userArgs.operation;
         args.opmode = userArgs.opmode;
+        args.oio = userArgs.oio;
         threads.push_back(std::async(benchmarkFunction, args));
     }
 
