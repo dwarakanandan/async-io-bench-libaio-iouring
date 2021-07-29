@@ -74,9 +74,12 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		exit(-1);
 	}
 
+	timespec timeout;
+	timeout.tv_sec = 5;
+
 	double start = getTime();
     while (getTime() - start < RUN_TIME) {
-		ret = io_getevents(ctx, 0, MAX_OPS, events, NULL);
+		ret = io_getevents(ctx, 100, MAX_OPS, events, &timeout);
 		cout << "Getting events: " << ret << endl;
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
