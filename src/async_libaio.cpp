@@ -66,6 +66,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	}
 
 	ret = io_submit(ctx, MAX_OPS, cbs);
+	cout << "Submitted events: " << ret << endl;
 	if (ret != 1) {
 		if (ret < 0) perror("io_submit");
 		else fprintf(stderr, "io_submit failed\n");
