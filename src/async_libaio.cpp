@@ -23,6 +23,10 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 	return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
 
+void asyncio() {
+	
+}
+
 int main(int argc, char *argv[]) {
 	aio_context_t ctx;
 	struct iocb cb;

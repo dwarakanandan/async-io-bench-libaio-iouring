@@ -24,6 +24,7 @@ extern const std::string READ;
 extern const std::string WRITE;
 
 struct RuntimeArgs_t {
+    std::string filename;
     int thread_id;
     int thread_count;
     int fd;
@@ -41,3 +42,9 @@ static inline double gettime(void) {
 }
 
 void printStats(const RuntimeArgs_t& args, double throughput, uint64_t ops);
+
+RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]);
+
+void fileOpen(RuntimeArgs_t args);
+
+void runBenchmark(RuntimeArgs_t& userArgs, double (*benchmarkFunction)(const RuntimeArgs_t& args));
