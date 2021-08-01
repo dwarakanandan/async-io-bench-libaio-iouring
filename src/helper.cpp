@@ -66,10 +66,12 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         totalOps += results.op_count;
     }
 
+    int oioPrint = (userArgs.lib == SYNCIO) ? 1 : userArgs.oio;
+
     cout << std::fixed
         << userArgs.operation.substr(0,1) << " " <<  userArgs.opmode.substr(0,1) << " "
         << "BLK_SIZE_KB:" << userArgs.blk_size << " "
-        << "OIO:" << userArgs.oio << " "
+        << "OIO:" << oioPrint << " "
         << "OP_COUNT:" << totalOps << " "
         << "THROUGHPUT_GBPS:" << totalThroughput << endl;
 }
