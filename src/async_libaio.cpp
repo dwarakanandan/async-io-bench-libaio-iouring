@@ -73,7 +73,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
 		// Submit args.oio events
-		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = offsets[ops_submitted+i];
+		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = offsets[(ops_submitted+i)%MAX_OPS];
 		ret = io_submit(ctx, args.oio, cbs);
 		if (ret < 0) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
