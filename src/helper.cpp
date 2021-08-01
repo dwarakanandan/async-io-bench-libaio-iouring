@@ -79,3 +79,9 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
 double calculateThroughputGbps(uint64_t ops, size_t buffer_size) {
     return ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
 }
+
+off_t getOffset(off_t initialOffset, int blk_size, uint64_t iteration, bool isRand) {
+    return isRand ?
+        initialOffset + (rand() * blk_size * 1024) % _100GB:
+        initialOffset + (iteration * blk_size * 1024) % _100GB;
+}

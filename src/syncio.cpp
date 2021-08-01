@@ -2,10 +2,10 @@
 
 using namespace std;
 
-void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
+void syncioRead(const RuntimeArgs_t& args, char* buffer, size_t buffer_size, uint64_t* ops, bool isRand) {
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t readCount = pread(fd, buffer, buffer_size, offsets[(*ops)%MAX_OPS]);
+        ssize_t readCount = pread(args.fd, buffer, buffer_size, getOffset(args.read_offset, args.blk_size, (*ops), isRand));
         if(readCount < 0) {
             perror("Read error");
             return;
@@ -14,10 +14,10 @@ void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint6
     }
 }
 
-void syncioWrite(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
+void syncioWrite(const RuntimeArgs_t& args, char* buffer, size_t buffer_size, uint64_t* ops, bool isRand) {
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t writeCount = pwrite(fd, buffer, buffer_size, offsets[(*ops)%MAX_OPS]);
+        ssize_t writeCount = pwrite(args.fd, buffer, buffer_size, getOffset(args.read_offset, args.blk_size, (*ops), isRand));
         if(writeCount < 0) {
             perror("Write error");
             return;
@@ -29,26 +29,16 @@ void syncioWrite(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint
 Result_t syncio(const RuntimeArgs_t& args) {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops = 0;
-    off_t offsets[MAX_OPS];
     bool isRead = (args.operation.compare(READ) == 0);
-
-    if (args.opmode.compare(SEQUENTIAL) == 0) {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (i * args.blk_size * 1024) % _100GB;
-        }
-    } else {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (rand() * args.blk_size * 1024) % _100GB;
-        }
-    }
+    bool isRand = (args.opmode.compare(RANDOM) == 0);
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
     memset(buffer, 'A', buffer_size);
 
     if (isRead) {
-        syncioRead(args.fd, buffer, buffer_size, offsets, &ops);
+        syncioRead(args, buffer, buffer_size, &ops, isRand);
     } else {
-        syncioWrite(args.fd, buffer, buffer_size, offsets, &ops);
+        syncioWrite(args, buffer, buffer_size, &ops, isRand);
     }
 
     Result_t results;

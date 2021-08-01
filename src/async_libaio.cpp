@@ -30,20 +30,10 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
 	uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
 	bool isRead = (args.operation.compare(READ) == 0);
-	off_t offsets[MAX_OPS];
+	bool isRand = (args.opmode.compare(RANDOM) == 0);
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
 	memset(buffer, 'A', buffer_size);
-
-	if (args.opmode.compare(SEQUENTIAL) == 0) {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (i * args.blk_size * 1024) % _100GB;
-        }
-    } else {
-        for(int i=0; i < MAX_OPS; i++) {
-            offsets[i] = args.read_offset + (rand() * args.blk_size * 1024) % _100GB;
-        }
-    }
 
 	aio_context_t ctx = 0;
 	struct iocb cb[args.oio];
@@ -73,7 +63,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
 		// Submit args.oio events
-		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = offsets[(ops_submitted+i)%MAX_OPS];
+		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = getOffset(args.read_offset, args.blk_size, ops_submitted+i, isRand);
 		ret = io_submit(ctx, args.oio, cbs);
 		if (ret < 0) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
