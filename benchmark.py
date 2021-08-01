@@ -28,7 +28,10 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
         outputs.append(stream.readline().strip())
     outputs_global.append(outputs)
     for output in outputs:
-        print(output)
+        split = output.split(" ")
+        for s in split:
+            if "THROUGHPUT_GBPS" in s:
+                print(s.split(":")[1])
     print()
         
 
@@ -52,6 +55,6 @@ def mainBenchmark():
 
 def oioBenchmark():
     for thread in [1, 4, 8, 16]:
-        runBenchmarkAllOios('libaio', thread, 'read', 'seq', 4)
+        runBenchmarkAllOios('libaio', thread, 'read', 'rand', 4)
 
 oioBenchmark()
