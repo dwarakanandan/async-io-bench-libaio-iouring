@@ -5,7 +5,7 @@ using namespace std;
 void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t readCount = pread(fd, buffer, buffer_size, offsets[*ops]);
+        ssize_t readCount = pread(fd, buffer, buffer_size, offsets[(*ops)%MAX_OPS]);
         if(readCount < 0) {
             perror("Read error");
             return;
@@ -17,7 +17,7 @@ void syncioRead(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint6
 void syncioWrite(int fd, char* buffer, size_t buffer_size, off_t offsets[], uint64_t* ops) {
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t writeCount = pwrite(fd, buffer, buffer_size, offsets[*ops]);
+        ssize_t writeCount = pwrite(fd, buffer, buffer_size, offsets[(*ops)%MAX_OPS]);
         if(writeCount < 0) {
             perror("Write error");
             return;
