@@ -63,16 +63,11 @@ def mainBenchmark():
                 runBenchmarkAllBlks(lib, thread, op, 'seq')
                 runBenchmarkAllBlks(lib, thread, op, 'rand')
 
-def oioBenchmark():
-    for thread in [1, 8, 16]:
-        runBenchmarkAllOios('libaio', thread, 'read', 'seq', 4)
-    for thread in [1, 8, 16]:
-        runBenchmarkAllOios('libaio', thread, 'read', 'rand', 4)
-
-for thread in [1, 8, 16]:
-    runBenchmark('syncio', thread, 'read', 'seq', 4)
-
-for thread in [1, 8, 16]:
-    runBenchmark('syncio', thread, 'read', 'rand', 4)
-
-oioBenchmark()
+# for thread in [1, 4, 8, 16]:
+#     runBenchmarkAllOios('libaio', thread, 'read', 'seq', 4)
+for thread in [1, 4, 8, 16]:
+    runBenchmarkAllOios('libaio', thread, 'read', 'rand', 4)
+# for thread in [1, 4, 8, 16]:
+#     runBenchmark('syncio', thread, 'read', 'seq', 4)
+# for thread in [1, 4, 8, 16]:
+#     runBenchmark('syncio', thread, 'read', 'rand', 4)
