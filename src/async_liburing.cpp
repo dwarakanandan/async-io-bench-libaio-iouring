@@ -40,32 +40,20 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         ops_submitted+= ret;
 
         /* Wait for args.oio IO requests to complete */
-        // for (int i = 0; i < args.oio; i++) {
-        //     struct io_uring_cqe *cqe;
-        //     ret = io_uring_wait_cqe(&ring, &cqe);
-        //     if (ret < 0) {
-        //         perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-        //         return return_error();
-        //     }
+        for (int i = 0; i < args.oio; i++) {
+            struct io_uring_cqe *cqe;
+            ret = io_uring_wait_cqe(&ring, &cqe);
+            if (ret < 0) {
+                perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
+                return return_error();
+            }
 
-        //     /* Check completion event result code */
-        //     if (cqe->res < 0) {
-        //         ops_failed++;
-        //     }
-        //     io_uring_cqe_seen(&ring, cqe);
-        // }
-        struct io_uring_cqe *cqe;
-        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
-        if (ret < 0) {
-            perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-            return return_error();
+            /* Check completion event result code */
+            if (cqe->res < 0) {
+                ops_failed++;
+            }
+            io_uring_cqe_seen(&ring, cqe);
         }
-
-        /* Check completion event result code */
-        if (cqe->res < 0) {
-            ops_failed++;
-        }
-        io_uring_cqe_seen(&ring, cqe);
 
         ops_returned+= args.oio;
     }
