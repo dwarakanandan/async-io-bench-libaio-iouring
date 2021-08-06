@@ -9,9 +9,9 @@ BUILD := build
 SOURCES := $(wildcard $(SRC)/*.cpp)
 OBJECTS := $(patsubst $(SRC)/%.cpp, $(BUILD)/%.o, $(SOURCES))
 
-all: setup benchmark
+all: clean benchmark
 
-setup:
+clean:
 	rm -rf $(BUILD)
 	mkdir -p $(BUILD)
 

@@ -20,7 +20,7 @@ void fileNameCheck(int argc, char const *argv[]) {
         << "--bsize <block_size_kb> "
         << "--op <read|write> "
         << "--mode <seq|rand> "
-        << "--lib <syncio|libaio> "
+        << "--lib <syncio|libaio|liburing> "
         << "--oio <outstanding_io_count> "
         << "--debug (show_debug) " << endl;
 
