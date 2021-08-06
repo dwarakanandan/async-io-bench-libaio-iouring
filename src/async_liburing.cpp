@@ -20,7 +20,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-        off_t offset =  args.read_offset + (buffer_size * args.oio * ops_submitted);
+        off_t offset =  args.read_offset + (buffer_size * ops_submitted);
 
         /* Get an SQE */
         struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
