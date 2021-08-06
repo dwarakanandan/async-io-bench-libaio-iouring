@@ -5,7 +5,7 @@ using namespace std;
 void syncioRead(const RuntimeArgs_t& args, char* buffer, size_t buffer_size, uint64_t* ops, bool isRand) {
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t readCount = pread(args.fd, buffer, buffer_size, getOffset(args.read_offset, args.blk_size, (*ops), isRand));
+        ssize_t readCount = pread(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, (*ops), isRand));
         if(readCount < 0) {
             perror("Read error");
             return;
@@ -17,7 +17,7 @@ void syncioRead(const RuntimeArgs_t& args, char* buffer, size_t buffer_size, uin
 void syncioWrite(const RuntimeArgs_t& args, char* buffer, size_t buffer_size, uint64_t* ops, bool isRand) {
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t writeCount = pwrite(args.fd, buffer, buffer_size, getOffset(args.read_offset, args.blk_size, (*ops), isRand));
+        ssize_t writeCount = pwrite(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, (*ops), isRand));
         if(writeCount < 0) {
             perror("Write error");
             return;
