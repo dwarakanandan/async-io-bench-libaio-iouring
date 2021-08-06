@@ -33,7 +33,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         if (sqe == NULL) {
             continue;
         }
-        io_uring_prep_readv(sqe, args.fd, fi->iovecs, args.oio, offset);
+        io_uring_prep_read(sqe, args.fd, fi->iovecs, args.oio, offset);
         io_uring_sqe_set_data(sqe, fi);
 
         /* Submit the request */
