@@ -1,7 +1,7 @@
 CC = g++
 
 CFLAGS = -g -Wall -O3
-LIBS = -pthread -laio
+LIBS = -pthread -laio -luring
 
 SRC := src
 BUILD := build
