@@ -6,15 +6,11 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     int ret = 0;
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0;
+    bool isRead = (args.operation.compare(READ) == 0);
+	bool isRand = (args.opmode.compare(RANDOM) == 0);
+
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
 	memset(buffer, '0', buffer_size);
-
-    struct file_info *fi = (file_info*) malloc(sizeof(*fi) + (sizeof(struct iovec) * args.oio));
-    fi->file_sz = buffer_size * args.oio;
-    for (int i = 0; i < args.oio; i++) {
-        fi->iovecs[i].iov_len = buffer_size;
-        fi->iovecs[i].iov_base = buffer;
-    }
 
     struct io_uring ring;
     ret = io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
@@ -22,35 +18,44 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
     }
+
     int temp=2;
 	double start = getTime();
 	//while (getTime() - start < RUN_TIME) {
     while (temp--) {
-        off_t offset =  args.read_offset + (buffer_size * ops_submitted) % _100GB;
 
-        /* Get an SQE */
-        struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
-        if (sqe == NULL) {
-            continue;
+        for (int i = 0; i < args.oio; i++)
+        {
+            /* Get a Submission Queue Entry */
+            struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
+            if (sqe == NULL) {
+                fprintf(stderr, "io_uring_get_sqe failed\n");
+                return return_error();
+            }
+            off_t offset = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
+            io_uring_prep_read(sqe, args.fd, buffer, buffer_size, offset);
         }
-        io_uring_prep_read(sqe, args.fd, fi->iovecs, args.oio, offset);
-        io_uring_sqe_set_data(sqe, fi);
 
-        /* Submit the request */
+        /* Submit the requests */
         io_uring_submit(&ring);
         ops_submitted+= args.oio;
 
-        /* Wait for a completion to be available, fetch the data from the readv operation */
-        struct io_uring_cqe *cqe;
-        ret = io_uring_wait_cqe(&ring, &cqe);
+        /* Wait for args.oio requests to complete */
+        struct io_uring_cqe *cqe[args.oio];
+        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
         if (ret < 0) {
             perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
             return return_error();
         }
-        if (cqe->res < 0) {
-            fprintf(stderr, "Async readv failed with code: %d\n", cqe->res);
-            return return_error();
+
+        /* Check completion event result codes */
+        for (int i = 0; i < args.oio; i++) {
+            if (cqe[i]->res < 0) {
+                fprintf(stderr, "Async read failed with code: %d\n", cqe[i]->res);
+                return return_error();
+            }
         }
+
 
         ops_returned+= args.oio;
     }
