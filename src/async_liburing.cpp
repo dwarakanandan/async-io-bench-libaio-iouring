@@ -8,9 +8,6 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
 	memset(buffer, '0', buffer_size);
 
-    struct io_uring ring;
-    io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
-
     struct file_info *fi = (file_info*) malloc(sizeof(*fi) + (sizeof(struct iovec) * args.oio));
     fi->file_sz = buffer_size * args.oio;
     for (int i = 0; i < args.oio; i++) {
@@ -22,6 +19,9 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 	while (getTime() - start < RUN_TIME) {
         cout << "Ops returned=" << ops_returned << endl;
         off_t offset =  args.read_offset + (buffer_size * ops_submitted) % _100GB;
+
+        struct io_uring ring;
+        io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
 
         /* Get an SQE */
         struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
