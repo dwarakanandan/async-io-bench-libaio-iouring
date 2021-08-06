@@ -3,6 +3,7 @@
 using namespace std;
 
 Result_t async_liburing(const RuntimeArgs_t& args) {
+    int ret = 0;
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0;
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
@@ -16,10 +17,15 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     }
 
     struct io_uring ring;
-    io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
-
+    ret = io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
+    if (ret < 0) {
+        perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
+        return return_error();
+    }
+    int temp=2;
 	double start = getTime();
-	while (getTime() - start < RUN_TIME) {
+	//while (getTime() - start < RUN_TIME) {
+    while (temp--) {
         off_t offset =  args.read_offset + (buffer_size * ops_submitted) % _100GB;
 
         /* Get an SQE */
@@ -36,9 +42,9 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
         /* Wait for a completion to be available, fetch the data from the readv operation */
         struct io_uring_cqe *cqe;
-        int ret = io_uring_wait_cqe(&ring, &cqe);
+        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
         if (ret < 0) {
-            getErrorMessageWithTid(args, "io_uring_wait_cqe");
+            perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
             return return_error();
         }
         if (cqe->res < 0) {
@@ -47,6 +53,12 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         }
 
         ops_returned+= args.oio;
+    }
+
+    ret = io_uring_queue_exit(&ring);
+    if (ret < 0) {
+        perror(getErrorMessageWithTid(args, "io_uring_queue_exit"));
+        return return_error();
     }
 
     Result_t results;
