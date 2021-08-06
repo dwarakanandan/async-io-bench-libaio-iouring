@@ -38,7 +38,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-		// Submit args.oio events
+		/* Submit args.oio events */
 		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
 		ret = io_submit(ctx, args.oio, cbs);
 		if (ret < 0) {
@@ -47,7 +47,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_submitted +=ret;
 
-		// Wait for args.oio events to complete
+		/* Wait for args.oio events to complete */
 		ret = io_getevents(ctx, args.oio, args.oio, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
@@ -55,7 +55,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_returned+=ret;
 
-		// Check event result codes
+		/* Check event result codes */
 		for (int i = 0; i < ret; i++)
 		{
 			if (events[i].res < 0) {
