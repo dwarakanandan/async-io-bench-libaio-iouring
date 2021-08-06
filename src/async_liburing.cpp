@@ -61,21 +61,23 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     struct io_uring ring;
     io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
 
+    struct file_info *fi = (file_info*) malloc(sizeof(*fi) + (sizeof(struct iovec) * args.oio));
+    fi->file_sz = buffer_size * args.oio;
+    for (int i = 0; i < args.oio; i++) {
+        fi->iovecs[i].iov_len = buffer_size;
+        fi->iovecs[i].iov_base = buffer;
+    }
 
+    cout << "starting bkar" << endl;
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-        struct file_info *fi = (file_info*) malloc(sizeof(*fi) + (sizeof(struct iovec) * args.oio));
-        fi->file_sz = buffer_size * args.oio;
-        for (int i = 0; i < args.oio; i++) {
-            fi->iovecs[i].iov_len = buffer_size;
-            fi->iovecs[i].iov_base = buffer;
-        }
         off_t offset =  args.read_offset + (buffer_size * args.oio * ops_submitted);
 
         /* Get an SQE */
         struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
         io_uring_prep_readv(sqe, args.fd, fi->iovecs, args.oio, offset);
         io_uring_sqe_set_data(sqe, fi);
+
         /* Submit the request */
         io_uring_submit(&ring);
         ops_submitted+= args.oio;
