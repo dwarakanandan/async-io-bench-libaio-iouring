@@ -33,7 +33,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	bool isRand = (args.opmode.compare(RANDOM) == 0);
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
-	memset(buffer, 'A', buffer_size);
+	memset(buffer, '0', buffer_size);
 
 	aio_context_t ctx = 0;
 	struct iocb cb[args.oio];

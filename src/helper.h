@@ -19,7 +19,6 @@
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
 #define RUN_TIME 1
-#define MAX_OPS 300000
 #define ASYNC_OP_BATCH_SIZE 10
 
 extern const std::string SEQUENTIAL;
