@@ -53,6 +53,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
                 fprintf(stderr, "Async read failed with code: %d\n", cqe->res);
                 return return_error();
             }
+            io_uring_cqe_seen(&ring, &cqe);
         }
 
         ops_returned+= args.oio;
