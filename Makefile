@@ -12,6 +12,7 @@ OBJECTS := $(patsubst $(SRC)/%.cpp, $(BUILD)/%.o, $(SOURCES))
 all: setup benchmark
 
 setup:
+	rm -rf $(BUILD)
 	mkdir -p $(BUILD)
 
 benchmark: $(OBJECTS)
