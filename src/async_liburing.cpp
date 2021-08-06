@@ -25,7 +25,6 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         /* Get an SQE */
         struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
         if (sqe == NULL) {
-            fprintf(stderr, "io_uring_get_sqe failed\n");
             continue;
         }
         io_uring_prep_readv(sqe, args.fd, fi->iovecs, args.oio, offset);
