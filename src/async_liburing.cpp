@@ -28,7 +28,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     /* Get an SQE */
     struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
     /* Setup a readv operation */
-    io_uring_prep_readv(sqe, args.fd, fi->iovecs, blocks, 0);
+    io_uring_prep_readv(sqe, args.fd, fi->iovecs, blocks, 3);
     /* Set user data */
     io_uring_sqe_set_data(sqe, fi);
     /* Finally, submit the request */
