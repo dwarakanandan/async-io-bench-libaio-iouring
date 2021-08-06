@@ -39,17 +39,19 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         ops_submitted+= args.oio;
 
         /* Wait for args.oio requests to complete */
-        struct io_uring_cqe *cqe;
-        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
-        if (ret < 0) {
-            perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-            return return_error();
-        }
+        for (int i = 0; i < args.oio; i++) {
+            struct io_uring_cqe *cqe;
+            ret = io_uring_wait_cqe(&ring, &cqe);
+            if (ret < 0) {
+                perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
+                return return_error();
+            }
 
-        /* Check completion event result code */
-        if (cqe->res < 0) {
-            fprintf(stderr, "Async read failed with code: %d\n", cqe->res);
-            return return_error();
+            /* Check completion event result code */
+            if (cqe->res < 0) {
+                fprintf(stderr, "Async read failed with code: %d\n", cqe->res);
+                return return_error();
+            }
         }
 
         ops_returned+= args.oio;
