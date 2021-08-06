@@ -36,8 +36,8 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         }
 
         /* Submit the requests */
-        io_uring_submit(&ring);
-        ops_submitted+= args.oio;
+        ret = io_uring_submit(&ring);
+        ops_submitted+= ret;
 
         /* Wait for args.oio requests to complete */
         for (int i = 0; i < args.oio; i++) {
