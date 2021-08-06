@@ -19,10 +19,8 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         return return_error();
     }
 
-    int temp=2;
 	double start = getTime();
-	//while (getTime() - start < RUN_TIME) {
-    while (temp--) {
+	while (getTime() - start < RUN_TIME) {
 
         for (int i = 0; i < args.oio; i++)
         {
@@ -48,7 +46,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
             return return_error();
         }
 
-        /* Check completion event result codes */
+        /* Check completion event result code */
         if (cqe->res < 0) {
             fprintf(stderr, "Async read failed with code: %d\n", cqe->res);
             return return_error();
