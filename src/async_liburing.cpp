@@ -55,11 +55,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         ops_returned+= args.oio;
     }
 
-    ret = io_uring_queue_exit(&ring);
-    if (ret < 0) {
-        perror(getErrorMessageWithTid(args, "io_uring_queue_exit"));
-        return return_error();
-    }
+    io_uring_queue_exit(&ring);
 
     Result_t results;
     results.throughput = calculateThroughputGbps(ops_returned, buffer_size);
