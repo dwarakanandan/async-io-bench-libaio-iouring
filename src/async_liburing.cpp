@@ -15,13 +15,13 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         fi->iovecs[i].iov_base = buffer;
     }
 
+    struct io_uring ring;
+    io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
+
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
         cout << "Ops returned=" << ops_returned << endl;
         off_t offset =  args.read_offset + (buffer_size * ops_submitted) % _100GB;
-
-        struct io_uring ring;
-        io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
 
         /* Get an SQE */
         struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);

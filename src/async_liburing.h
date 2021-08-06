@@ -2,7 +2,7 @@
 
 #include <liburing.h>
 
-#define QUEUE_DEPTH 1
+#define QUEUE_DEPTH 8
 
 struct file_info {
     off_t file_sz;
