@@ -21,7 +21,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-
+        cout << "ops_submitted: " << ops_submitted << endl;
         for (int i = 0; i < args.oio; i++)
         {
             /* Get a Submission Queue Entry */
