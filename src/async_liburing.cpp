@@ -1,5 +1,7 @@
 #include "async_liburing.h"
 
+using namespace std;
+
 struct file_info {
     off_t file_sz;
     struct iovec iovecs[];
@@ -45,5 +47,12 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
     fi = (file_info*) io_uring_cqe_get_data(cqe);
 
+    cout << fi->file_sz << std::endl;
+    char* obuf = (char*) fi->iovecs[0].iov_base;
+    for (int i = 0; i < 10; i++)
+    {
+        printf("%d=%d:%c\n", i, obuf[i], obuf[i]);
+    }
+    
     return return_error();
 }
