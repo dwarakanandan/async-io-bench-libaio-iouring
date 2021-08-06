@@ -19,9 +19,8 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     }
 
 	double start = getTime();
-    int temp = 10;
-	//while (getTime() - start < RUN_TIME) {
-    while (temp--) {
+	while (getTime() - start < RUN_TIME) {
+        cout << "Ops returned=" << ops_returned << endl;
         off_t offset =  args.read_offset + (buffer_size * ops_submitted) % _100GB;
 
         /* Get an SQE */
