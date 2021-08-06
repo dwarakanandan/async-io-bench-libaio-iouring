@@ -42,7 +42,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
         /* Wait for a completion to be available, fetch the data from the readv operation */
         struct io_uring_cqe *cqe;
-        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
+        ret = io_uring_wait_cqe(&ring, &cqe);
         if (ret < 0) {
             perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
             return return_error();
