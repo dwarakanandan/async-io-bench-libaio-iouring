@@ -41,7 +41,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         ops_submitted+= args.oio;
 
         /* Wait for args.oio requests to complete */
-        struct io_uring_cqe **cqe;
+        struct io_uring_cqe *cqe[args.oio];
         ret = io_uring_wait_cqe_nr(&ring, cqe, args.oio);
         if (ret < 0) {
             perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
