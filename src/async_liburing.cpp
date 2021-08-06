@@ -43,7 +43,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         return return_error();
     }
 
-    struct file_info *fi = (file_info*) io_uring_cqe_get_data(cqe);
+    fi = (file_info*) io_uring_cqe_get_data(cqe);
 
     return return_error();
 }
