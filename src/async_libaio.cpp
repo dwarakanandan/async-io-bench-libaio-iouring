@@ -19,13 +19,6 @@ inline int io_getevents(aio_context_t ctx, long min_nr, long max_nr,
 	return syscall(__NR_io_getevents, ctx, min_nr, max_nr, events, timeout);
 }
 
-Result_t return_error() {
-	Result_t results;
-	results.throughput = 0;
-	results.op_count = 0;
-	return results;
-}
-
 Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
 	uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;

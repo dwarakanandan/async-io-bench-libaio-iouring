@@ -85,3 +85,10 @@ off_t getOffset(off_t initialOffset, size_t buffer_size, uint64_t iteration, boo
         initialOffset + (rand() * buffer_size) % _100GB:
         initialOffset + (iteration * buffer_size) % _100GB;
 }
+
+Result_t return_error() {
+	Result_t results;
+	results.throughput = 0;
+	results.op_count = 0;
+	return results;
+}

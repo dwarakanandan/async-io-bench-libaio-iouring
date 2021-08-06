@@ -1,6 +1,7 @@
 #include "helper.h"
-#include "syncio.h"
+#include "sync_io.h"
 #include "async_libaio.h"
+#include "async_liburing.h"
 
 using namespace std;
 
@@ -63,7 +64,7 @@ int main(int argc, char const *argv[])
     switch(args.lib) {
         case SYNCIO: runBenchmark(args, syncio); break;
         case LIBAIO: runBenchmark(args, async_libaio); break;
-        case IOURING: break;
+        case IOURING: runBenchmark(args, async_liburing); break;
     }
 
     return 0;

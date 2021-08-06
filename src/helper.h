@@ -73,3 +73,5 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
 double calculateThroughputGbps(uint64_t ops, size_t buffer_size);
 
 off_t getOffset(off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand);
+
+Result_t return_error();
