@@ -33,7 +33,7 @@ Result_t syncio(const RuntimeArgs_t& args) {
     bool isRand = (args.opmode.compare(RANDOM) == 0);
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
-    memset(buffer, 'A', buffer_size);
+    memset(buffer, '0', buffer_size);
 
     if (isRead) {
         syncioRead(args, buffer, buffer_size, &ops, isRand);
