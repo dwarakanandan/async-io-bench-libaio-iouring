@@ -22,16 +22,17 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
         cout << "ops_submitted: " << ops_submitted << endl;
+        struct io_uring_sqe *sqe[args.oio];
         for (int i = 0; i < args.oio; i++)
         {
             /* Get a Submission Queue Entry */
-            struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
-            if (sqe == NULL) {
+            sqe[i] = io_uring_get_sqe(&ring);
+            if (sqe[i] == NULL) {
                 fprintf(stderr, "io_uring_get_sqe failed\n");
                 return return_error();
             }
             off_t offset = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
-            io_uring_prep_read(sqe, args.fd, buffer, buffer_size, offset);
+            io_uring_prep_read(sqe[i], args.fd, buffer, buffer_size, offset);
         }
 
         /* Submit the requests */
