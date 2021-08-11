@@ -26,4 +26,4 @@ benchmark: $(OBJECTS)
 	$(CC) $(CFLAGS) $(LAIO_SRC) $(LURING_SRC) $^ -o build/$@ $(LIBS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) -I$(SRC) $(LAIO_INCLUDES) $(LURING_INCLUDES) $(CFLAGS) $(LURING_SRC) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(SRC) $(LAIO_INCLUDES) $(LURING_INCLUDES) -c $< -o $@
