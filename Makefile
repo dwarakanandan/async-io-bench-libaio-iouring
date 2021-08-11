@@ -1,9 +1,11 @@
 CC = g++
 
 CFLAGS = -g -Wall -O3
+LUSRC := -L../liburing/src/
 LIBS = -pthread -laio -luring
 
 SRC := src
+LUINCLUDES := -I../liburing/src/include/
 BUILD := build
 
 SOURCES := $(wildcard $(SRC)/*.cpp)
@@ -16,7 +18,7 @@ clean:
 	mkdir -p $(BUILD)
 
 benchmark: $(OBJECTS)
-	$(CC) $^ -o build/$@ $(CFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) $(LUSRC) $^ -o build/$@ $(LIBS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) -I$(SRC) -c $< -o $@ $(CFLAGS)
+	$(CC) -I$(SRC) $(LUINCLUDES) $(CFLAGS) $(LUSRC) -c $< -o $@
