@@ -1,12 +1,17 @@
 CC = g++
 
 CFLAGS = -g -Wall -O3
-LUSRC := -L../liburing/src/
+SRC := src
+BUILD := build
+
 LIBS = -pthread -laio -luring
 
-SRC := src
-LUINCLUDES := -I../liburing/src/include/
-BUILD := build
+LAIO_SRC := -L../libaio/src/
+LURING_SRC := -L../liburing/src/
+
+LAIO_INCLUDES := -I../libaio/src/
+LURING_INCLUDES := -I../liburing/src/include/
+
 
 SOURCES := $(wildcard $(SRC)/*.cpp)
 OBJECTS := $(patsubst $(SRC)/%.cpp, $(BUILD)/%.o, $(SOURCES))
@@ -18,7 +23,7 @@ clean:
 	mkdir -p $(BUILD)
 
 benchmark: $(OBJECTS)
-	$(CC) $(CFLAGS) $(LUSRC) $^ -o build/$@ $(LIBS)
+	$(CC) $(CFLAGS) $(LURING_SRC) $^ -o build/$@ $(LIBS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) -I$(SRC) $(LUINCLUDES) $(CFLAGS) $(LUSRC) -c $< -o $@
+	$(CC) -I$(SRC) $(LURING_INCLUDES) $(CFLAGS) $(LURING_SRC) -c $< -o $@
