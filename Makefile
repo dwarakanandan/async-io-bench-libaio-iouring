@@ -23,7 +23,7 @@ clean:
 	mkdir -p $(BUILD)
 
 benchmark: $(OBJECTS)
-	$(CC) $(CFLAGS) $(LURING_SRC) $^ -o build/$@ $(LIBS)
+	$(CC) $(CFLAGS) $(LAIO_SRC) $(LURING_SRC) $^ -o build/$@ $(LIBS)
 
 $(BUILD)/%.o: $(SRC)/%.cpp
-	$(CC) -I$(SRC) $(LURING_INCLUDES) $(CFLAGS) $(LURING_SRC) -c $< -o $@
+	$(CC) -I$(SRC) $(LAIO_INCLUDES) $(LURING_INCLUDES) $(CFLAGS) $(LURING_SRC) -c $< -o $@
