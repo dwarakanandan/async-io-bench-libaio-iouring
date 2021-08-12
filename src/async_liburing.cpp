@@ -67,8 +67,9 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
             if (cqe->res < 0) {
                 ops_failed++;
             }
-            io_uring_cqe_seen(&ring, cqe);
         }
+
+        io_uring_cq_advance(&ring, args.oio);
 
         ops_returned+= args.oio;
     }
@@ -150,8 +151,9 @@ Result_t _async_liburing_write(const RuntimeArgs_t& args)
             if (cqe->res < 0) {
                 ops_failed++;
             }
-            io_uring_cqe_seen(&ring, cqe);
         }
+
+        io_uring_cq_advance(&ring, args.oio);
 
         ops_returned+= args.oio;
     }
