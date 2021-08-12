@@ -29,10 +29,7 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
         outputs.append(stream.readline().strip())
     outputs_global.append(outputs)
     for output in outputs:
-        split = output.split(" ")
-        for s in split:
-            if "THROUGHPUT_GBPS" in s:
-                print(s.split(":")[1])
+        print(output)
     print()
         
 
