@@ -116,8 +116,8 @@ Result_t async_liburing_write(const RuntimeArgs_t& args) {
             fprintf(stderr, "io_uring_get_sqe failed\n");
             return return_error();
         }
-        off_t offset = getOffset(args.read_offset, buffer_size, ops_submitted, isRand);
-        io_uring_prep_writev(sqe, args.fd, iovecs, args.oio, offset);
+        //off_t offset = getOffset(args.read_offset, buffer_size, ops_submitted, isRand);
+        io_uring_prep_writev(sqe, args.fd, iovecs, args.oio, args.read_offset);
 
         /* Submit args.oio operations */
         ret = io_uring_submit(&ring);
