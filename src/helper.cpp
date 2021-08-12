@@ -45,8 +45,8 @@ double calculateThroughputGbps(uint64_t ops, size_t buffer_size) {
 
 off_t getOffset(off_t maxOffset, off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand) {
     return isRand ?
-        (initialOffset + (rand() * buffer_size) % _100GB) % maxOffset:
-        (initialOffset + (iteration * buffer_size) % _100GB) % maxOffset;
+        (initialOffset + (rand() * buffer_size) ) % maxOffset:
+        (initialOffset + (iteration * buffer_size) ) % maxOffset;
 }
 
 Result_t return_error() {
