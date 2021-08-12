@@ -40,8 +40,7 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
 
     double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-        for (int i = 0; i < args.oio; i++)
-        {
+        for (int i = 0; i < args.oio; i++) {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
             io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offsets[i]);
@@ -115,7 +114,7 @@ Result_t _async_liburing_write(const RuntimeArgs_t& args)
     }
 
     /* Initialize io_uring */
-    ret = io_uring_queue_init(1024, &ring, 0);
+    ret = io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
@@ -123,14 +122,9 @@ Result_t _async_liburing_write(const RuntimeArgs_t& args)
 
     double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-        for (int i = 0; i < args.oio; i++)
-        {
+        for (int i = 0; i < args.oio; i++) {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            if (sqe == NULL) {
-                fprintf(stderr, "io_uring_get_sqe failed\n");
-                return return_error();
-            }
             io_uring_prep_writev(sqe, args.fd, &iovecs[i], 1, offsets[i]);
         }
 
