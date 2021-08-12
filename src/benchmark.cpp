@@ -5,6 +5,8 @@
 
 #include <future>
 #include <vector>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -100,6 +102,27 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         << "TPUT_GBPS:" << totalThroughput << endl;
 }
 
+off_t getFileSize(int fd) {
+    struct stat st;
+
+    if(fstat(fd, &st) < 0) {
+        perror("fstat");
+        return -1;
+    }
+
+    if (S_ISBLK(st.st_mode)) {
+        unsigned long long bytes;
+        if (ioctl(fd, BLKGETSIZE64, &bytes) != 0) {
+            perror("ioctl");
+            return -1;
+        }
+        return bytes;
+    } else if (S_ISREG(st.st_mode))
+        return st.st_size;
+
+    return -1;
+}
+
 int main(int argc, char const *argv[])
 {
     fileNameCheck(argc, argv);
@@ -108,11 +131,13 @@ int main(int argc, char const *argv[])
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
 
-    switch(args.lib) {
-        case SYNCIO: runBenchmark(args, syncio); break;
-        case LIBAIO: runBenchmark(args, async_libaio); break;
-        case IOURING: runBenchmark(args, async_liburing); break;
-    }
+    // switch(args.lib) {
+    //     case SYNCIO: runBenchmark(args, syncio); break;
+    //     case LIBAIO: runBenchmark(args, async_libaio); break;
+    //     case IOURING: runBenchmark(args, async_liburing); break;
+    // }
+    off_t max_offset = getFileSize(args.fd);
+    cout << max_offset << endl;
 
     return 0;
 }
