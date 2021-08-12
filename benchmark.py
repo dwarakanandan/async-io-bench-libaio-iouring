@@ -1,6 +1,6 @@
 import os
 
-base_command = 'sudo ./build/benchmark --file /dev/md0 '
+base_command = './build/benchmark --file /dev/md127 '
 
 libs = []
 libs.append('syncio')
