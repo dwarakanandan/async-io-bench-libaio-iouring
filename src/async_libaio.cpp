@@ -93,7 +93,7 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
     Result_t results = (args.operation == READ) ?
-		_async_libaio(args, IOCB_CMD_NOOP) :
+		_async_libaio(args, IOCB_CMD_PREAD) :
 		_async_libaio(args, IOCB_CMD_PWRITE);
 
 	if (args.debugInfo) printOpStats(args, results);
