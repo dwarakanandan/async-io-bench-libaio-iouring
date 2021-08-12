@@ -4,8 +4,7 @@ using namespace std;
 
 Result_t _async_liburing(
     const RuntimeArgs_t& args,
-    void (*io_uring_func)(struct io_uring_sqe *sqe, int fd,
-        const struct iovec *iovecs, unsigned nr_vecs, off_t offset))
+    void (*io_uring_func)())
 {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
