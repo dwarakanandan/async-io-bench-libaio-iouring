@@ -13,7 +13,6 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
     struct io_uring_cqe *cqe;
     struct iovec *iovecs;
     __kernel_timespec timeout;
-    sigset_t sigset;
     char* buffer[args.oio];
     off_t offsets[args.oio];
     int ret;
