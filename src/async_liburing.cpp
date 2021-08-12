@@ -13,8 +13,8 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     struct io_uring_cqe *cqe;
     struct iovec *iovecs;
     __kernel_timespec timeout;
-    int ret;
     char* buffer[args.oio];
+    int ret;
 
     iovecs = (iovec*) calloc(args.oio, sizeof(struct iovec));
     for (int i = 0; i < args.oio; i++)
@@ -26,7 +26,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     }
 
     /* Initialize io_uring */
-    ret = io_uring_queue_init(args.oio, &ring, 0);
+    ret = io_uring_queue_init(1, &ring, 0);
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
@@ -44,7 +44,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         isRead? io_uring_prep_readv(sqe, args.fd, iovecs, args.oio, offset):
                 io_uring_prep_writev(sqe, args.fd, iovecs, args.oio, offset);
 
-        /* Submit the requests */
+        /* Submit the request with args.oio operations */
         ret = io_uring_submit(&ring);
         ops_submitted+= args.oio;
 

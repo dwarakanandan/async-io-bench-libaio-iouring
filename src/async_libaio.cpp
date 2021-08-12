@@ -8,22 +8,23 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	bool isRead = (args.operation == READ);
 	bool isRand = (args.opmode == RANDOM);
 
-	char* buffer = (char *) aligned_alloc(1024, buffer_size);
-	memset(buffer, '0', buffer_size);
-
 	aio_context_t ctx = 0;
 	struct iocb cb[args.oio];
 	struct iocb *cbs[args.oio];
 	struct io_event events[args.oio];
 	timespec timeout;
+	char* buffer[args.oio];
 	int ret;
 
 	for (int i = 0; i < args.oio; i++)
 	{
+		buffer[i] = (char *) aligned_alloc(1024, buffer_size);
+	    memset(buffer[i], '0', buffer_size);
+
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
 		cb[i].aio_lio_opcode = isRead? IOCB_CMD_PREAD: IOCB_CMD_PWRITE;
-		cb[i].aio_buf = (uint64_t)buffer;
+		cb[i].aio_buf = (uint64_t) buffer[i];
 		cb[i].aio_nbytes = buffer_size;
 		cbs[i] = &(cb[i]);
 	}
