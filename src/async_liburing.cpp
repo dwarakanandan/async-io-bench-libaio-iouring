@@ -161,15 +161,16 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
         // }
         timeout.tv_sec = 1;
         ret = io_uring_wait_cqes(&ring, &cqe, args.oio, &timeout, &sigset);
+        cout << ret << endl;
         if (ret < 0) {
             perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
             return return_error();
         }
 
-        /* Check completion event result code */
-        if (cqe->res < 0) {
-            ops_failed+= args.oio;
-        }
+        // /* Check completion event result code */
+        // if (cqe->res < 0) {
+        //     ops_failed+= args.oio;
+        // }
         io_uring_cq_advance(&ring, args.oio);
 
         ops_returned+= args.oio;
