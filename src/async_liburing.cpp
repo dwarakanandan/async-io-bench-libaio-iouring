@@ -113,10 +113,13 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
         return return_error();
     }
 
-    struct iovec iov[1];
-    iov[0].iov_base = (char *) aligned_alloc(1024, buffer_size);
-    iov[0].iov_len = buffer_size;
-    ret = io_uring_register_buffers(&ring, iov, 1);
+    struct iovec iov[args.oio];
+    for (int i = 0; i < args.oio; i++) {
+        iov[i].iov_base = (char *) aligned_alloc(1024, buffer_size);
+        iov[i].iov_len = buffer_size;
+    }
+
+    ret = io_uring_register_buffers(&ring, iov, args.oio);
     if (ret) {
         fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
         return return_error();
@@ -127,8 +130,8 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
         for (int i = 0; i < args.oio; i++) {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iov[0].iov_base, buffer_size, offsets[i], 0) :
-                io_uring_prep_write_fixed(sqe, args.fd, iov[0].iov_base, buffer_size, offsets[i], 0);
+            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iov[i].iov_base, buffer_size, offsets[i], 0) :
+                io_uring_prep_write_fixed(sqe, args.fd, iov[i].iov_base, buffer_size, offsets[i], 0);
         }
 
         /* Submit args.oio operations */
