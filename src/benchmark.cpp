@@ -75,7 +75,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         args.blk_size = userArgs.blk_size;
         args.fd = userArgs.fd;
         args.debugInfo = userArgs.debugInfo;
-        args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
+        args.read_offset = (_100GB * i) % userArgs.max_offset;
         args.operation = userArgs.operation;
         args.opmode = userArgs.opmode;
         args.oio = userArgs.oio;
@@ -131,13 +131,13 @@ int main(int argc, char const *argv[])
     RuntimeArgs_t args = mapUserArgsToRuntimeArgs(argc, argv);
     fileOpen(&args);
 
-    // switch(args.lib) {
-    //     case SYNCIO: runBenchmark(args, syncio); break;
-    //     case LIBAIO: runBenchmark(args, async_libaio); break;
-    //     case IOURING: runBenchmark(args, async_liburing); break;
-    // }
-    off_t max_offset = getFileSize(args.fd);
-    cout << max_offset << endl;
+    args.max_offset = getFileSize(args.fd);
+
+    switch(args.lib) {
+        case SYNCIO: runBenchmark(args, syncio); break;
+        case LIBAIO: runBenchmark(args, async_libaio); break;
+        case IOURING: runBenchmark(args, async_liburing); break;
+    }
 
     return 0;
 }
