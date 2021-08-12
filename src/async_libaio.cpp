@@ -22,7 +22,7 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 	    memset(buffer[i], '0', buffer_size);
 
 		/* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.read_offset, buffer_size, i, isRand);
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
 
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
@@ -54,7 +54,7 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 
 		/* Pre-calculate next set of offsets */
         for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
         }
 
 		/* Wait for args.oio requests to complete */

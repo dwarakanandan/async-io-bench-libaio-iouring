@@ -79,6 +79,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         args.operation = userArgs.operation;
         args.opmode = userArgs.opmode;
         args.oio = userArgs.oio;
+        args.max_offset = userArgs.max_offset;
         threads.push_back(std::async(benchmarkFunction, args));
     }
 

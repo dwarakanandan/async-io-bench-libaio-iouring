@@ -72,7 +72,7 @@ void fileOpen(RuntimeArgs_t *args);
 
 double calculateThroughputGbps(uint64_t ops, size_t buffer_size);
 
-off_t getOffset(off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand);
+off_t getOffset(off_t maxOffset, off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand);
 
 Result_t return_error();
 

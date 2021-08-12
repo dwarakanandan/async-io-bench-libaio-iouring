@@ -25,7 +25,7 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
 	    memset(buffer[i], '0', buffer_size);
 
         /* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.read_offset, buffer_size, i, isRand);
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
 
         iovecs[i].iov_base = buffer[i];
         iovecs[i].iov_len = buffer_size;
@@ -52,7 +52,7 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
 
         /* Pre-calculate next set of offsets */
         for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
         }
 
         /* Wait for args.oio IO requests to complete */
@@ -107,7 +107,7 @@ Result_t _async_liburing_write(const RuntimeArgs_t& args)
 	    memset(buffer[i], '0', buffer_size);
 
         /* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.read_offset, buffer_size, i, isRand);
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
 
         iovecs[i].iov_base = buffer[i];
         iovecs[i].iov_len = buffer_size;
@@ -134,7 +134,7 @@ Result_t _async_liburing_write(const RuntimeArgs_t& args)
 
         /* Pre-calculate next set of offsets */
         for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
         }
 
         /* Wait for args.oio IO requests to complete */

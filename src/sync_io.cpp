@@ -12,7 +12,7 @@ Result_t _syncio_read(const RuntimeArgs_t& args) {
 
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t opCount = pread(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, ops_submitted, isRand));
+        ssize_t opCount = pread(args.fd, buffer, buffer_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand));
         ops_submitted++;
         if(opCount < 0) {
             ops_failed++;
@@ -39,7 +39,7 @@ Result_t _syncio_write(const RuntimeArgs_t& args) {
 
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t opCount = pwrite(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, ops_submitted, isRand));
+        ssize_t opCount = pwrite(args.fd, buffer, buffer_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand));
         ops_submitted++;
         if(opCount < 0) {
             ops_failed++;
