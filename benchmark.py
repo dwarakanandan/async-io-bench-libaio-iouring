@@ -52,7 +52,6 @@ def runBenchmark(lib, threads, op, mode, bsize):
     outputs_global.append(outputs)
     for output in outputs:
         print(output)
-    print()
 
 def mainBenchmark():
     for thread in threads:
