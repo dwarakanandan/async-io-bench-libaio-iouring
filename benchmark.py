@@ -68,5 +68,5 @@ def mainBenchmark():
 runBenchmarkAllOios('libaio' ,1, 'read', 'seq', 4)
 runBenchmarkAllOios('iouring' ,1, 'read', 'seq', 4)
 
-runBenchmarkAllOios('libaio' , 4, 'read', 'seq', 4)
-runBenchmarkAllOios('iouring' , 4, 'read', 'seq', 4)
+runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
+runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
