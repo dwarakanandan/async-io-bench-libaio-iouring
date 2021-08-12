@@ -56,18 +56,20 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
         }
 
         /* Wait for args.oio IO requests to complete */
-        timeout.tv_sec = 1;
-        ret = io_uring_wait_cqes(&ring, &cqe, args.oio, &timeout, &sigset);
-        if (ret < 0) {
-            perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-            return return_error();
-        }
+        for (int i = 0; i < args.oio; i++) {
+            timeout.tv_sec = 1;
+            ret = io_uring_wait_cqe_timeout(&ring, &cqe, &timeout);
+            if (ret < 0) {
+                perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
+                return return_error();
+            }
 
-        /* Check completion event result code */
-        if (cqe->res < 0) {
-            ops_failed+= args.oio;
+            /* Check completion event result code */
+            if (cqe->res < 0) {
+                ops_failed++;
+            }
+            io_uring_cqe_seen(&ring, cqe);
         }
-        io_uring_cq_advance(&ring, args.oio);
 
         ops_returned+= args.oio;
     }
@@ -138,18 +140,20 @@ Result_t _async_liburing_write(const RuntimeArgs_t& args)
         }
 
         /* Wait for args.oio IO requests to complete */
-        timeout.tv_sec = 1;
-        ret = io_uring_wait_cqes(&ring, &cqe, args.oio, &timeout, &sigset);
-        if (ret < 0) {
-            perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-            return return_error();
-        }
+        for (int i = 0; i < args.oio; i++) {
+            timeout.tv_sec = 1;
+            ret = io_uring_wait_cqe_timeout(&ring, &cqe, &timeout);
+            if (ret < 0) {
+                perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
+                return return_error();
+            }
 
-        /* Check completion event result code */
-        if (cqe->res < 0) {
-            ops_failed+= args.oio;
+            /* Check completion event result code */
+            if (cqe->res < 0) {
+                ops_failed++;
+            }
+            io_uring_cqe_seen(&ring, cqe);
         }
-        io_uring_cq_advance(&ring, args.oio);
 
         ops_returned+= args.oio;
     }
