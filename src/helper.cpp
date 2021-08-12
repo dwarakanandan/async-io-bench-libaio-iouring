@@ -30,7 +30,9 @@ const char* getErrorMessageWithTid(const RuntimeArgs_t& args, std::string error)
 }
 
 void fileOpen(RuntimeArgs_t *args) {
-    args->fd = open(args->filename.c_str(), O_RDWR | O_CREAT , S_IRUSR | S_IWUSR);
+    args->fd = (args->odirect) ?
+        open(args->filename.c_str(), O_RDWR | O_CREAT | O_DIRECT, S_IRUSR | S_IWUSR) :
+        open(args->filename.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (args->fd < 0) {
         perror("Open error");
         exit(-1);

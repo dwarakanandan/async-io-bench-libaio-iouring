@@ -42,6 +42,7 @@ RuntimeArgs_t getDefaultArgs() {
     args.opmode = SEQUENTIAL;
     args.oio = 10;
     args.lib = SYNCIO;
+    args.odirect = true;
     return args;
 }
 
@@ -55,6 +56,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
         if (strcmp(argv[i], "--mode") == 0) {args.opmode = strcmp(argv[i+1], "seq") == 0 ? SEQUENTIAL: RANDOM;}
         if (strcmp(argv[i], "--oio") == 0) {args.oio = atoi(argv[i+1]);}
         if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
+        if (strcmp(argv[i], "--nodirect") == 0) {args.odirect = false;}
         if (strcmp(argv[i], "--lib") == 0) {
             args.lib = strcmp(argv[i+1], "syncio") == 0 ? SYNCIO:
                 (strcmp(argv[i+1], "libaio") == 0 ? LIBAIO : IOURING);

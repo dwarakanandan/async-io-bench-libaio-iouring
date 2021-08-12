@@ -41,6 +41,7 @@ struct RuntimeArgs_t {
     int oio;
     off_t read_offset;
     bool debugInfo;
+    bool odirect;
     OPERATION operation;
     OPMODE opmode;
     LIB lib;
