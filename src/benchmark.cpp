@@ -67,7 +67,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
 
 void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
     std::vector<std::future<Result_t>> threads;
-    for (int i = 1; i <= userArgs.thread_count; ++i) {
+    for (int i = 0; i < userArgs.thread_count; ++i) {
         RuntimeArgs_t args;
         args.thread_id = i;
         args.blk_size = userArgs.blk_size;
