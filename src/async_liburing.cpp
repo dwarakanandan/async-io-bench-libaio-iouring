@@ -50,10 +50,10 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
         ret = io_uring_submit(&ring);
         ops_submitted+= args.oio;
 
-        // /* Pre-calculate next set of offsets */
-        // for (int i = 0; i < args.oio; i++) {
-        //     offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
-        // }
+        /* Pre-calculate next set of offsets */
+        for (int i = 0; i < args.oio; i++) {
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
+        }
 
         /* Wait for args.oio IO requests to complete */
         timeout.tv_sec = 1;
