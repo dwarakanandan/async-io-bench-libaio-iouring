@@ -19,7 +19,7 @@ Result_t syncio(const RuntimeArgs_t& args) {
         iovecs[i].iov_base = buffer[i];
         iovecs[i].iov_len = buffer_size;
     }
-    int count = 1;
+
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
         ssize_t opCount = isRead ?
@@ -30,7 +30,6 @@ Result_t syncio(const RuntimeArgs_t& args) {
             perror("IO error");
             return return_error();
         }
-        if(count--) printf("got %d\n", opCount);
 
         ops+= args.oio;
     }
