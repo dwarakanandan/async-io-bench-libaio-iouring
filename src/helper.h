@@ -16,11 +16,15 @@
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
 #define RUN_TIME 1
 
-extern const std::string SEQUENTIAL;
-extern const std::string RANDOM;
+enum OPERATION {
+  READ,
+  WRITE
+};
 
-extern const std::string READ;
-extern const std::string WRITE;
+enum OPMODE {
+  SEQUENTIAL,
+  RANDOM
+};
 
 enum LIB {
   SYNCIO,
@@ -37,8 +41,8 @@ struct RuntimeArgs_t {
     int oio;
     off_t read_offset;
     bool debugInfo;
-    std::string operation;
-    std::string opmode;
+    OPERATION operation;
+    OPMODE opmode;
     LIB lib;
 };
 
@@ -69,3 +73,9 @@ double calculateThroughputGbps(uint64_t ops, size_t buffer_size);
 off_t getOffset(off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand);
 
 Result_t return_error();
+
+std::string operationToString(OPERATION operation);
+
+std::string opmodeToString(OPMODE opmode);
+
+std::string libToString(LIB lib);

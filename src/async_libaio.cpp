@@ -5,8 +5,8 @@ using namespace std;
 Result_t async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
 	uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
-	bool isRead = (args.operation.compare(READ) == 0);
-	bool isRand = (args.opmode.compare(RANDOM) == 0);
+	bool isRead = (args.operation == READ);
+	bool isRand = (args.opmode == RANDOM);
 
 	char* buffer = (char *) aligned_alloc(1024, buffer_size);
 	memset(buffer, '0', buffer_size);

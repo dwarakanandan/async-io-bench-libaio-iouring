@@ -3,16 +3,17 @@ import os
 base_command = 'sudo ./build/benchmark --file /dev/md0 '
 
 libs = []
-# libs.append('syncio')
+libs.append('syncio')
 libs.append('libaio')
+libs.append('iouring')
 
 ops = []
 ops.append('read')
-# ops.append('write')
+ops.append('write')
 
 threads = []
 threads.append(1)
-# threads.append(8)
+threads.append(8)
 
 bsizes = [2, 4, 16, 64, 128, 256, 512, 1024, 2048, 102400]
 
@@ -63,11 +64,7 @@ def mainBenchmark():
                 runBenchmarkAllBlks(lib, thread, op, 'seq')
                 runBenchmarkAllBlks(lib, thread, op, 'rand')
 
-# for thread in [1, 4, 8, 16]:
-#     runBenchmarkAllOios('libaio', thread, 'read', 'seq', 4)
-for thread in [1, 4, 8, 16]:
-    runBenchmarkAllOios('libaio', thread, 'read', 'rand', 4)
-# for thread in [1, 4, 8, 16]:
-#     runBenchmark('syncio', thread, 'read', 'seq', 4)
-# for thread in [1, 4, 8, 16]:
-#     runBenchmark('syncio', thread, 'read', 'rand', 4)
+runBenchmark('syncio', 1, 'read', 'seq', 4)
+runBenchmark('libaio', 1, 'read', 'seq', 4)
+runBenchmark('iouring', 1, 'read', 'seq', 4)
+

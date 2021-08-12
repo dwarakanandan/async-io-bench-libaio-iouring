@@ -89,12 +89,13 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
     int oioPrint = (userArgs.lib == SYNCIO) ? 1 : userArgs.oio;
 
     cout << std::fixed
-        << userArgs.lib << " "
-        << userArgs.operation.substr(0,1) << " " <<  userArgs.opmode.substr(0,1) << " "
-        << "BLK_SIZE_KB:" << userArgs.blk_size << " "
+        << libToString(userArgs.lib) << " "
+        << operationToString(userArgs.operation) << " "
+        << opmodeToString(userArgs.opmode) << " "
+        << "BLKS_KB:" << userArgs.blk_size << " "
         << "OIO:" << oioPrint << " "
-        << "OP_COUNT:" << totalOps << " "
-        << "THROUGHPUT_GBPS:" << totalThroughput << endl;
+        << "OP_CNT:" << totalOps << " "
+        << "TPUT_GBPS:" << totalThroughput << endl;
 }
 
 int main(int argc, char const *argv[])

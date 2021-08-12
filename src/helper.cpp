@@ -2,12 +2,6 @@
 
 using namespace std;
 
-const std::string SEQUENTIAL = "SEQUENTIAL";
-const std::string RANDOM = "RANDOM";
-
-const std::string READ = "READ";
-const std::string WRITE = "WRITE";
-
 void printStats(const RuntimeArgs_t& args, const Result_t results) {
     std::stringstream stats;
     stats << "TID:" << args.thread_id
@@ -58,4 +52,26 @@ Result_t return_error() {
 	results.throughput = 0;
 	results.op_count = 0;
 	return results;
+}
+
+std::string operationToString(OPERATION operation) {
+    switch (operation) {
+        case READ: return "RD";
+        case WRITE: return "WR";
+    }
+}
+
+std::string opmodeToString(OPMODE opmode) {
+    switch (opmode) {
+        case SEQUENTIAL: return "SEQ";
+        case RANDOM: return "RND";
+    }
+}
+
+std::string libToString(LIB lib) {
+    switch (lib) {
+        case SYNCIO: return "SYNCIO";
+        case LIBAIO: return "LIBAIO";
+        case IOURING: return "IOURING";
+    }
 }
