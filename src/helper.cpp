@@ -58,6 +58,7 @@ std::string operationToString(OPERATION operation) {
     switch (operation) {
         case READ: return "RD";
         case WRITE: return "WR";
+        default: return "";
     }
 }
 
@@ -65,6 +66,7 @@ std::string opmodeToString(OPMODE opmode) {
     switch (opmode) {
         case SEQUENTIAL: return "SEQ";
         case RANDOM: return "RND";
+        default: return "";
     }
 }
 
@@ -73,5 +75,6 @@ std::string libToString(LIB lib) {
         case SYNCIO: return "SYNCIO";
         case LIBAIO: return "LIBAIO";
         case IOURING: return "IOURING";
+        default: return "";
     }
 }
