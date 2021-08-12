@@ -2,9 +2,10 @@
 
 using namespace std;
 
-Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
+Result_t _async_libaio(const RuntimeArgs_t& args) {
 	size_t buffer_size = 1024 * args.blk_size;
 	uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
+	bool isRead = (args.operation == READ);
 	bool isRand = (args.opmode == RANDOM);
 
 	aio_context_t ctx = 0;
@@ -26,7 +27,6 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
-		cb[i].aio_lio_opcode = libaio_opcode;
 		cb[i].aio_buf = (uint64_t) buffer[i];
 		cb[i].aio_nbytes = buffer_size;
 		cbs[i] = &(cb[i]);
@@ -42,7 +42,10 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
 		/* Prepare args.oio requests */
-		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = offsets[i];
+		for (int i = 0; i < args.oio; i++) {
+			cb[i].aio_offset = offsets[i];
+			cb[i].aio_lio_opcode = isRead ? IOCB_CMD_PREAD : IOCB_CMD_PWRITE;
+		}
 		
 		/* Submit args.oio requests */
 		ret = io_submit(ctx, args.oio, cbs);
@@ -92,10 +95,7 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 }
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
-    Result_t results = (args.operation == READ) ?
-		_async_libaio(args, IOCB_CMD_PREAD) :
-		_async_libaio(args, IOCB_CMD_PWRITE);
-
+    Result_t results = _async_libaio(args);
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }
