@@ -43,7 +43,8 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
         for (int i = 0; i < args.oio; i++) {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offsets[i]);
+            //io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offsets[i]);
+            io_uring_prep_nop(sqe);
         }
 
         /* Submit args.oio operations */
