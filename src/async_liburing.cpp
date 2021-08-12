@@ -44,10 +44,6 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
         {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            if (sqe == NULL) {
-                fprintf(stderr, "io_uring_get_sqe failed\n");
-                return return_error();
-            }
             io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offsets[i]);
         }
 
