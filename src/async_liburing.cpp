@@ -26,7 +26,8 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     }
 
     /* Initialize io_uring */
-    ret = io_uring_queue_init(10, &ring, 0);
+    ret = io_uring_queue_init(2, &ring, 0);
+    cout << "iouring init " << ret <<endl;
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
