@@ -32,7 +32,7 @@ Result_t _async_liburing_read(const RuntimeArgs_t& args)
     }
 
     /* Initialize io_uring */
-    ret = io_uring_queue_init(1024, &ring, 0);
+    ret = io_uring_queue_init(1024, &ring, IORING_SETUP_IOPOLL);
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
