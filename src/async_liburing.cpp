@@ -2,7 +2,11 @@
 
 using namespace std;
 
-Result_t async_liburing_read(const RuntimeArgs_t& args) {
+Result_t _async_liburing(
+    const RuntimeArgs_t& args,
+    void (*io_uring_func)(struct io_uring_sqe *sqe, int fd,
+        const struct iovec *iovecs, unsigned nr_vecs, off_t offset))
+{
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
 	bool isRand = (args.opmode == RANDOM);
@@ -23,6 +27,7 @@ Result_t async_liburing_read(const RuntimeArgs_t& args) {
         buffer[i] = (char *) aligned_alloc(1024, buffer_size);
 	    memset(buffer[i], '0', buffer_size);
 
+        /* Pre-calculate first set of offsets */
         offsets[i] = getOffset(args.read_offset, buffer_size, i, isRand);
 
         iovecs[i].iov_base = buffer[i];
@@ -46,12 +51,17 @@ Result_t async_liburing_read(const RuntimeArgs_t& args) {
                 fprintf(stderr, "io_uring_get_sqe failed\n");
                 return return_error();
             }
-            io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offsets[i]);
+            io_uring_func(sqe, args.fd, &iovecs[i], 1, offsets[i]);
         }
 
         /* Submit args.oio operations */
         ret = io_uring_submit(&ring);
         ops_submitted+= args.oio;
+
+        /* Pre-calculate next set of offsets */
+        for (int i = 0; i < args.oio; i++) {
+            offsets[i] = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
+        }
 
         /* Wait for args.oio IO requests to complete */
         timeout.tv_sec = 1;
@@ -82,12 +92,10 @@ Result_t async_liburing_read(const RuntimeArgs_t& args) {
     return results;
 }
 
-Result_t async_liburing_write(const RuntimeArgs_t& args) {
-    return return_error();
-}
-
 Result_t async_liburing(const RuntimeArgs_t& args) {
-    Result_t results = (args.operation == READ) ? async_liburing_read(args): async_liburing_write(args);
+    Result_t results = (args.operation == READ) ?
+        _async_liburing(args, io_uring_prep_readv) :
+        _async_liburing(args, io_uring_prep_writev);
 
 	if (args.debugInfo) printOpStats(args, results);
     return results;

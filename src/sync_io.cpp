@@ -2,10 +2,9 @@
 
 using namespace std;
 
-Result_t syncio(const RuntimeArgs_t& args) {
+Result_t _syncio_read(const RuntimeArgs_t& args) {
     uint64_t ops = 0;
     size_t buffer_size = 1024 * args.blk_size;
-    bool isRead = (args.operation == READ);
     bool isRand = (args.opmode == RANDOM);
 
     char* buffer = (char *) aligned_alloc(1024, buffer_size);
@@ -13,12 +12,9 @@ Result_t syncio(const RuntimeArgs_t& args) {
 
     double start = getTime();
     while (getTime() - start < RUN_TIME) {
-        ssize_t opCount = isRead ?
-            pread(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, ops, isRand)) :
-            pwrite(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, ops, isRand));
-
+        ssize_t opCount = pread(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, ops, isRand));
         if(opCount < 0) {
-            perror("IO error");
+            perror("Read error");
             return return_error();
         }
 
@@ -28,7 +24,39 @@ Result_t syncio(const RuntimeArgs_t& args) {
     Result_t results;
     results.throughput = calculateThroughputGbps(ops, buffer_size);
     results.op_count = ops;
+    return results;
+}
 
-    if (args.debugInfo) printStats(args, results);
+Result_t _syncio_write(const RuntimeArgs_t& args) {
+    uint64_t ops = 0;
+    size_t buffer_size = 1024 * args.blk_size;
+    bool isRand = (args.opmode == RANDOM);
+
+    char* buffer = (char *) aligned_alloc(1024, buffer_size);
+    memset(buffer, '0', buffer_size);
+
+    double start = getTime();
+    while (getTime() - start < RUN_TIME) {
+        ssize_t opCount = pwrite(args.fd, buffer, buffer_size, getOffset(args.read_offset, buffer_size, ops, isRand));
+        if(opCount < 0) {
+            perror("Write error");
+            return return_error();
+        }
+
+        ops++;
+    }
+
+    Result_t results;
+    results.throughput = calculateThroughputGbps(ops, buffer_size);
+    results.op_count = ops;
+    return results;
+}
+
+Result_t syncio(const RuntimeArgs_t& args) {
+    Result_t results = (args.operation == READ) ?
+    _syncio_read(args) :
+    _syncio_write(args);
+
+	if (args.debugInfo) printOpStats(args, results);
     return results;
 }
