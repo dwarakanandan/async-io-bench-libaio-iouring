@@ -15,13 +15,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 	struct iocb cb[args.oio];
 	struct iocb *cbs[args.oio];
 	struct io_event events[args.oio];
+	timespec timeout;
 	int ret;
-
-	ret = io_setup(args.oio, &ctx);
-	if (ret < 0) {
-		perror(getErrorMessageWithTid(args, "io_setup"));
-		return return_error();
-	}
 
 	for (int i = 0; i < args.oio; i++)
 	{
@@ -33,13 +28,19 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		cbs[i] = &(cb[i]);
 	}
 
-	timespec timeout;
-	timeout.tv_sec = 1;
+	/* Initialize libaio */
+	ret = io_setup(args.oio, &ctx);
+	if (ret < 0) {
+		perror(getErrorMessageWithTid(args, "io_setup"));
+		return return_error();
+	}
 
 	double start = getTime();
 	while (getTime() - start < RUN_TIME) {
-		/* Submit args.oio events */
+		/* Prepare args.oio requests */
 		for (int i = 0; i < args.oio; i++) cb[i].aio_offset = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
+		
+		/* Submit args.oio requests */
 		ret = io_submit(ctx, args.oio, cbs);
 		if (ret < 0) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
@@ -47,7 +48,8 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_submitted +=ret;
 
-		/* Wait for args.oio events to complete */
+		/* Wait for args.oio requests to complete */
+		timeout.tv_sec = 1;
 		ret = io_getevents(ctx, args.oio, args.oio, events, &timeout);
 		if (ret < 0) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
@@ -55,7 +57,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 		ops_returned+=ret;
 
-		/* Check event result codes */
+		/* Check completion event result code */
 		for (int i = 0; i < ret; i++)
 		{
 			if (events[i].res < 0) {
@@ -64,6 +66,7 @@ Result_t async_libaio(const RuntimeArgs_t& args) {
 		}
 	}
 
+	/* Cleanup libaio */
 	ret = io_destroy(ctx);
 	if (ret < 0) {
 		perror(getErrorMessageWithTid(args, "io_destroy"));

@@ -43,39 +43,6 @@ void fileOpen(RuntimeArgs_t *args) {
     }
 }
 
-void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
-    std::vector<std::future<Result_t>> threads;
-    for (int i = 1; i <= userArgs.thread_count; ++i) {
-        RuntimeArgs_t args;
-        args.thread_id = i;
-        args.blk_size = userArgs.blk_size;
-        args.fd = userArgs.fd;
-        args.debugInfo = userArgs.debugInfo;
-        args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
-        args.operation = userArgs.operation;
-        args.opmode = userArgs.opmode;
-        args.oio = userArgs.oio;
-        threads.push_back(std::async(benchmarkFunction, args));
-    }
-
-    double totalThroughput = 0;
-    uint64_t totalOps = 0;
-    for (auto& t : threads) {
-        auto results = t.get();
-        totalThroughput += results.throughput;
-        totalOps += results.op_count;
-    }
-
-    int oioPrint = (userArgs.lib == SYNCIO) ? 1 : userArgs.oio;
-
-    cout << std::fixed
-        << userArgs.operation.substr(0,1) << " " <<  userArgs.opmode.substr(0,1) << " "
-        << "BLK_SIZE_KB:" << userArgs.blk_size << " "
-        << "OIO:" << oioPrint << " "
-        << "OP_COUNT:" << totalOps << " "
-        << "THROUGHPUT_GBPS:" << totalThroughput << endl;
-}
-
 double calculateThroughputGbps(uint64_t ops, size_t buffer_size) {
     return ((ops * buffer_size)/(1024.0*1024*1024 * RUN_TIME));
 }

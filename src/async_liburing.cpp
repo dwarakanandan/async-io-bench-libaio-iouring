@@ -3,7 +3,6 @@
 using namespace std;
 
 Result_t async_liburing(const RuntimeArgs_t& args) {
-    int ret = 0;
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
     bool isRead = (args.operation.compare(READ) == 0);
@@ -16,9 +15,12 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
     struct io_uring_sqe *sqe;
     struct io_uring_cqe *cqe;
     struct iovec *iovecs;
+    __kernel_timespec timeout;
+    int ret;
 
     iovecs = (iovec*) calloc(args.oio, sizeof(struct iovec));
 
+    /* Initialize io_uring */
     ret = io_uring_queue_init(args.oio, &ring, 0);
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
@@ -50,7 +52,8 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
         /* Wait for args.oio IO requests to complete */
         for (int i = 0; i < args.oio; i++) {
-            ret = io_uring_wait_cqe(&ring, &cqe);
+            timeout.tv_sec = 1;
+            ret = io_uring_wait_cqe_timeout(&ring, &cqe, &timeout);
             if (ret < 0) {
                 perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
                 return return_error();
@@ -66,6 +69,7 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         ops_returned+= args.oio;
     }
 
+    /* Cleanup io_uring */
     io_uring_queue_exit(&ring);
 
     Result_t results;

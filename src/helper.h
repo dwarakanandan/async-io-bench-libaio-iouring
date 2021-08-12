@@ -5,21 +5,16 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
-#include <stdlib.h>
 #include <sys/time.h>
 #include <iostream>
 #include <unistd.h>
-#include <thread>
-#include <vector>
 #include <sstream>
-#include <future>
 
 #define _100MB (1024*1024*100)
 #define _1GB (1024*1024*1024*1L)
 #define _100GB (1024*1024*1024*100L)
 #define MAX_READ_OFFSET (1024*1024*1024*3500L)
 #define RUN_TIME 1
-#define ASYNC_OP_BATCH_SIZE 10
 
 extern const std::string SEQUENTIAL;
 extern const std::string RANDOM;
@@ -62,13 +57,12 @@ static inline double getTime(void) {
 }
 
 void printStats(const RuntimeArgs_t& args, const Result_t results);
+
 void printOpStats(const RuntimeArgs_t& args, const Result_t results);
 
 const char* getErrorMessageWithTid(const RuntimeArgs_t& args, std::string error);
 
 void fileOpen(RuntimeArgs_t *args);
-
-void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args));
 
 double calculateThroughputGbps(uint64_t ops, size_t buffer_size);
 

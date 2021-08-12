@@ -3,6 +3,9 @@
 #include "async_libaio.h"
 #include "async_liburing.h"
 
+#include <future>
+#include <vector>
+
 using namespace std;
 
 void fileNameCheck(int argc, char const *argv[]) {
@@ -30,13 +33,20 @@ void fileNameCheck(int argc, char const *argv[]) {
     }
 }
 
-RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
+RuntimeArgs_t getDefaultArgs() {
     RuntimeArgs_t args;
     args.thread_count = 1;
     args.blk_size = 16;
     args.debugInfo = false;
+    args.operation = READ;
+    args.opmode = SEQUENTIAL;
     args.oio = 10;
-    
+    args.lib = SYNCIO;
+    return args;
+}
+
+RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
+    RuntimeArgs_t args = getDefaultArgs();
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "--file") == 0) {args.filename = argv[i+1];}
         if (strcmp(argv[i], "--bsize") == 0) {args.blk_size = atoi(argv[i+1]);}
@@ -51,6 +61,39 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
         }
     }
     return args;
+}
+
+void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const RuntimeArgs_t& args)) {
+    std::vector<std::future<Result_t>> threads;
+    for (int i = 1; i <= userArgs.thread_count; ++i) {
+        RuntimeArgs_t args;
+        args.thread_id = i;
+        args.blk_size = userArgs.blk_size;
+        args.fd = userArgs.fd;
+        args.debugInfo = userArgs.debugInfo;
+        args.read_offset = (_100GB * i) % MAX_READ_OFFSET;
+        args.operation = userArgs.operation;
+        args.opmode = userArgs.opmode;
+        args.oio = userArgs.oio;
+        threads.push_back(std::async(benchmarkFunction, args));
+    }
+
+    double totalThroughput = 0;
+    uint64_t totalOps = 0;
+    for (auto& t : threads) {
+        auto results = t.get();
+        totalThroughput += results.throughput;
+        totalOps += results.op_count;
+    }
+
+    int oioPrint = (userArgs.lib == SYNCIO) ? 1 : userArgs.oio;
+
+    cout << std::fixed
+        << userArgs.operation.substr(0,1) << " " <<  userArgs.opmode.substr(0,1) << " "
+        << "BLK_SIZE_KB:" << userArgs.blk_size << " "
+        << "OIO:" << oioPrint << " "
+        << "OP_COUNT:" << totalOps << " "
+        << "THROUGHPUT_GBPS:" << totalThroughput << endl;
 }
 
 int main(int argc, char const *argv[])
