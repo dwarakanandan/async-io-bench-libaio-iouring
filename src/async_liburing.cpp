@@ -123,7 +123,7 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
         return return_error();
     }
 
-    int ret = io_uring_register_buffers(&ring, iovecs, args.oio);
+    ret = io_uring_register_buffers(&ring, iovecs, args.oio);
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_register_buffers"));
         return return_error();
