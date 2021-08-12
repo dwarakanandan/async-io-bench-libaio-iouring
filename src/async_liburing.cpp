@@ -117,7 +117,7 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
     iov[0].iov_base = (char *) aligned_alloc(1024, buffer_size);
     ret = io_uring_register_buffers(&ring, iov, 1);
     if (ret) {
-        perror(getErrorMessageWithTid(args, "io_uring_register_buffers"));
+        fprintf(stderr, "Error registering buffers: %s", strerror(-ret));
         return return_error();
     }
 
