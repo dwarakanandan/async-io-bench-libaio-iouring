@@ -13,7 +13,13 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 	memset(buffer, '0', buffer_size);
 
     struct io_uring ring;
-    ret = io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe *cqe;
+    struct iovec *iovecs;
+
+    iovecs = (iovec*) calloc(args.oio, sizeof(struct iovec));
+
+    ret = io_uring_queue_init(args.oio, &ring, 0);
     if (ret < 0) {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
@@ -25,14 +31,17 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
         for (int i = 0; i < args.oio; i++)
         {
             /* Get a Submission Queue Entry */
-            struct io_uring_sqe *sqe = io_uring_get_sqe(&ring);
+            sqe = io_uring_get_sqe(&ring);
             if (sqe == NULL) {
                 fprintf(stderr, "io_uring_get_sqe failed\n");
                 return return_error();
             }
+            iovecs[i].iov_base = buffer;
+            iovecs[i].iov_len = buffer_size;
+
             off_t offset = getOffset(args.read_offset, buffer_size, ops_submitted+i, isRand);
-            isRead? io_uring_prep_read(sqe, args.fd, buffer, buffer_size, offset):
-                io_uring_prep_write(sqe, args.fd, buffer, buffer_size, offset);
+            isRead? io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offset):
+                io_uring_prep_writev(sqe, args.fd, &iovecs[i], 1, offset);
         }
 
         /* Submit the requests */
@@ -41,7 +50,6 @@ Result_t async_liburing(const RuntimeArgs_t& args) {
 
         /* Wait for args.oio IO requests to complete */
         for (int i = 0; i < args.oio; i++) {
-            struct io_uring_cqe *cqe;
             ret = io_uring_wait_cqe(&ring, &cqe);
             if (ret < 0) {
                 perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
