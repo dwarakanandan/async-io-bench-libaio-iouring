@@ -88,6 +88,7 @@ Result_t _async_libaio(const RuntimeArgs_t& args, int libaio_opcode) {
 	results.ops_submitted = ops_submitted;
 	results.ops_returned = ops_returned;
 	results.ops_failed = ops_failed;
+	return results;
 }
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
