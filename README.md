@@ -48,6 +48,6 @@ Build tested with:
 #### Sample usage:
 
 ```shell
-benchmark --file <file_name> --threads <thread_count> --bsize <block_size_kb> --op <read|write> --mode <seq|rand> --lib <syncio|libaio|liburing> --oio <outstanding_io_count> --debug (show_debug)
+benchmark --file <file_name> --threads <thread_count> --bsize <block_size_kb> --op <read|write> --mode <seq|rand> --lib <syncio|libaio|liburing> --oio <outstanding_io_count> --vsize <vectored IO batch size> --nodirect (disable O_DIRECT) --debug (show_debug)
 ```
 
