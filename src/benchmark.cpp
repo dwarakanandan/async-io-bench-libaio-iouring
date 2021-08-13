@@ -27,6 +27,8 @@ void fileNameCheck(int argc, char const *argv[]) {
         << "--mode <seq|rand> "
         << "--lib <syncio|libaio|liburing> "
         << "--oio <outstanding_io_count> "
+        << "--vsize <vectored IO batch size> "
+        << "--nodirect (disable O_DIRECT) "
         << "--debug (show_debug) " << endl;
 
     if(!hasFileName) {
