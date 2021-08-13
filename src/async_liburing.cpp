@@ -12,24 +12,23 @@ Result_t _async_liburing(const RuntimeArgs_t& args)
     struct io_uring ring;
     struct io_uring_sqe *sqe;
     struct io_uring_cqe *cqe;
-    struct iovec *iovecs;
+    struct iovec *iovecs_oio[args.oio];
     __kernel_timespec timeout;
     sigset_t sigset;
-    char* buffer[args.oio];
     off_t offsets[args.oio];
     int ret;
 
-    iovecs = (iovec*) calloc(args.oio, sizeof(struct iovec));
     for (int i = 0; i < args.oio; i++)
     {
-        buffer[i] = (char *) aligned_alloc(1024, buffer_size);
-	    memset(buffer[i], '0', buffer_size);
+        iovecs_oio[i] = (iovec*) calloc(args.vec_size, sizeof(struct iovec));
+        for (int j = 0; j < args.vec_size; j++)
+        {
+            iovecs_oio[i][j].iov_base = (char *) aligned_alloc(1024, buffer_size);
+            iovecs_oio[i][j].iov_len = buffer_size;
+        }
 
         /* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
-
-        iovecs[i].iov_base = buffer[i];
-        iovecs[i].iov_len = buffer_size;
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i*args.vec_size, isRand);
     }
 
     /* Initialize io_uring */
@@ -44,17 +43,17 @@ Result_t _async_liburing(const RuntimeArgs_t& args)
         for (int i = 0; i < args.oio; i++) {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            isRead ? io_uring_prep_readv(sqe, args.fd, &iovecs[i], 1, offsets[i]) :
-                io_uring_prep_writev(sqe, args.fd, &iovecs[i], 1, offsets[i]);
+            isRead ? io_uring_prep_readv(sqe, args.fd, iovecs_oio[i], args.vec_size, offsets[i]) :
+                io_uring_prep_writev(sqe, args.fd, iovecs_oio[i], args.vec_size, offsets[i]);
         }
 
         /* Submit args.oio operations */
         ret = io_uring_submit(&ring);
-        ops_submitted+= args.oio;
+        ops_submitted+= (args.oio * args.vec_size);
 
         /* Pre-calculate next set of offsets */
         for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+(i*args.vec_size), isRand);
         }
 
         /* Wait for args.oio IO requests to complete */
@@ -67,11 +66,11 @@ Result_t _async_liburing(const RuntimeArgs_t& args)
 
         /* Check completion event result code */
         if (cqe->res < 0) {
-            ops_failed+= args.oio;
+            ops_failed+= (args.oio * args.vec_size);
         }
         io_uring_cq_advance(&ring, args.oio);
 
-        ops_returned+= args.oio;
+        ops_returned+= (args.oio * args.vec_size);
     }
 
     /* Cleanup io_uring */
@@ -177,7 +176,8 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
 }
 
 Result_t async_liburing(const RuntimeArgs_t& args) {
-    Result_t results = _async_liburing_fixed_buffer(args);
+    // Result_t results = _async_liburing_fixed_buffer(args);
+    Result_t results = _async_liburing(args);
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }

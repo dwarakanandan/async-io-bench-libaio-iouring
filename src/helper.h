@@ -38,6 +38,7 @@ struct RuntimeArgs_t {
     int fd;
     int blk_size;
     int oio;
+    int vec_size;
     off_t read_offset;
     off_t max_offset;
     bool debugInfo;
