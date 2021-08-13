@@ -24,12 +24,12 @@ outputs_global = []
 
 def runBenchmarkAllOiosTput(lib, threads, op, mode, bsize):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-    print('TPUT_GBPS average over 10 runs for OIO:')
+    print('TPUT_GBPS average over 25 runs for OIO:')
     print(oio_sizes)
     for oio in oio_sizes:
         tputs = []
-        for i in range(0, 10):
-            time.sleep(2)
+        for i in range(0, 25):
+            time.sleep(1)
             stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
             split = stream.readline().strip().split(' ')
             for s in split:
@@ -41,12 +41,12 @@ def runBenchmarkAllOiosTput(lib, threads, op, mode, bsize):
 
 def runBenchmarkAllOiosOpcount(lib, threads, op, mode, bsize):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-    print('OP_CNT average over 10 runs for OIO:')
+    print('OP_CNT average over 25 runs for OIO:')
     print(oio_sizes)
     for oio in oio_sizes:
         tputs = []
-        for i in range(0, 10):
-            time.sleep(2)
+        for i in range(0, 25):
+            time.sleep(1)
             stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
             split = stream.readline().strip().split(' ')
             for s in split:
@@ -76,6 +76,9 @@ def runBenchmark(lib, threads, op, mode, bsize):
     outputs_global.append(outputs)
     for output in outputs:
         print(output)
+
+runBenchmarkAllOiosTput('libaio' , 1, 'read', 'rand', 4)
+runBenchmarkAllOiosTput('iouring' , 1, 'read', 'rand', 4)
 
 runBenchmarkAllOiosOpcount('libaio' , 1, 'read', 'rand', 4)
 runBenchmarkAllOiosOpcount('iouring' , 1, 'read', 'rand', 4)
