@@ -31,7 +31,8 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
             split = stream.readline().strip().split(' ')
             for s in split:
                 if s.startswith('TPUT_GBPS'):
-                    tputs.append(s.split(':')[1])
+                    tputs.append(int(s.split(':')[1]))
+        print(tputs)
         print(sum(tputs)/len(tputs))
 
     print()
