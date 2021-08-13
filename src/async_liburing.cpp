@@ -176,8 +176,7 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
 }
 
 Result_t async_liburing(const RuntimeArgs_t& args) {
-    // Result_t results = _async_liburing_fixed_buffer(args);
-    Result_t results = _async_liburing_vectored(args);
+    Result_t results = (args.vec_size > 0) ? _async_liburing_vectored(args): _async_liburing_fixed_buffer(args);
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }

@@ -191,7 +191,7 @@ Result_t _async_libaio_vectored(const RuntimeArgs_t& args) {
 }
 
 Result_t async_libaio(const RuntimeArgs_t& args) {
-    Result_t results = _async_libaio_vectored(args);
+    Result_t results = (args.vec_size > 0) ? _async_libaio_vectored(args) : _async_libaio(args);
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }

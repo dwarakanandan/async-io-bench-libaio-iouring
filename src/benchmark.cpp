@@ -45,6 +45,7 @@ RuntimeArgs_t getDefaultArgs() {
     args.oio = 8;
     args.lib = SYNCIO;
     args.odirect = true;
+    args.vec_size = 0;
     return args;
 }
 
@@ -57,6 +58,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[]) {
         if (strcmp(argv[i], "--op") == 0) {args.operation = strcmp(argv[i+1], "read") == 0 ? READ: WRITE;}
         if (strcmp(argv[i], "--mode") == 0) {args.opmode = strcmp(argv[i+1], "seq") == 0 ? SEQUENTIAL: RANDOM;}
         if (strcmp(argv[i], "--oio") == 0) {args.oio = atoi(argv[i+1]);}
+        if (strcmp(argv[i], "--vsize") == 0) {args.vec_size = atoi(argv[i+1]);}
         if (strcmp(argv[i], "--debug") == 0) {args.debugInfo = true;}
         if (strcmp(argv[i], "--nodirect") == 0) {args.odirect = false;}
         if (strcmp(argv[i], "--lib") == 0) {
@@ -80,7 +82,7 @@ void runBenchmark(RuntimeArgs_t& userArgs, Result_t (*benchmarkFunction)(const R
         args.opmode = userArgs.opmode;
         args.oio = userArgs.oio;
         args.max_offset = userArgs.max_offset;
-        args.vec_size = 10;
+        args.vec_size = userArgs.vec_size;
         threads.push_back(std::async(benchmarkFunction, args));
     }
 
