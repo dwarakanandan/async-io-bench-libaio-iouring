@@ -23,13 +23,17 @@ outputs_global = []
 
 def runBenchmarkAllOios(lib, threads, op, mode, bsize):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-    outputs = []
+
     for oio in oio_sizes:
-        stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
-        outputs.append(stream.readline().strip())
-    outputs_global.append(outputs)
-    for output in outputs:
-        print(output)
+        tputs = []
+        for i in range(0, 10):
+            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
+            split = stream.readline().strip().split(' ')
+            for s in split:
+                if s.startswith('TPUT_GBPS'):
+                    tputs.append(s.split(':')[1])
+        print(sum(tputs)/len(tputs))
+
     print()
         
 
