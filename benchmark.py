@@ -17,7 +17,7 @@ threads.append(8)
 
 bsizes = [2, 4, 8, 16, 64, 128, 512, 1024, 2048, 102400]
 
-oio_sizes = [2, 4, 8, 16, 64, 128, 512, 1024]
+oio_sizes = [2, 4, 8, 16, 64, 128, 256, 512, 1024]
 
 outputs_global = []
 
@@ -79,9 +79,9 @@ def basicSanityTest():
         runBenchmark('iouring', thread, 'write', 'rand', 4)
         print()
 
-basicSanityTest()
+# basicSanityTest()
 
-# runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
-# runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
+runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
+runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOios('libaio' , 4, 'read', 'rand', 4)
 # runBenchmarkAllOios('iouring' , 4, 'read', 'rand', 4)
