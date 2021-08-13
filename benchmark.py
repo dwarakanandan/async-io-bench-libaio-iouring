@@ -1,4 +1,5 @@
 import os
+import time
 
 base_command = './build/benchmark --file /dev/md127 '
 
@@ -23,11 +24,12 @@ outputs_global = []
 
 def runBenchmarkAllOios(lib, threads, op, mode, bsize):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-    print('OIO sizes:')
+    print('TPUT_GBPS average over 10 runs for OIO:')
     print(oio_sizes)
     for oio in oio_sizes:
         tputs = []
         for i in range(0, 10):
+            time.sleep(2)
             stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
             split = stream.readline().strip().split(' ')
             for s in split:
