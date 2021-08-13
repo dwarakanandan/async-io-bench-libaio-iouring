@@ -18,16 +18,18 @@ threads.append(8)
 
 bsizes = [2, 4, 8, 16, 64, 128, 512, 1024, 2048, 102400]
 
-oio_sizes = [2, 4, 8, 16, 64, 128, 256, 512, 1024]
+
 
 outputs_global = []
 
-def runBenchmarkAllOiosTput(lib, threads, op, mode, bsize):
+def runBenchmarkAllOios(lib, threads, op, mode, bsize):
+    oio_sizes = [2, 4, 8, 16, 64, 128, 256, 512, 1024]
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-    print('TPUT_GBPS average over 25 runs for OIO:')
-    print(oio_sizes)
+    avg_tputs = []
+    avg_opcounts = []
     for oio in oio_sizes:
         tputs = []
+        opcounts = []
         for i in range(0, 25):
             time.sleep(1)
             stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
@@ -35,27 +37,53 @@ def runBenchmarkAllOiosTput(lib, threads, op, mode, bsize):
             for s in split:
                 if s.startswith('TPUT_GBPS'):
                     tputs.append(float(s.split(':')[1]))
-        avg_tput = sum(tputs)/len(tputs)
+                if s.startswith('OP_CNT'):
+                    opcounts.append(int(s.split(':')[1]))
+        avg_tputs.append(sum(tputs)/len(tputs))
+        avg_opcounts.append(sum(opcounts)/len(opcounts))
+    
+    print(oio_sizes)
+    print('TPUT_GBPS average over 25 runs for OIO:')
+    for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
     print()
-
-def runBenchmarkAllOiosOpcount(lib, threads, op, mode, bsize):
-    print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     print('OP_CNT average over 25 runs for OIO:')
-    print(oio_sizes)
-    for oio in oio_sizes:
-        tputs = []
-        for i in range(0, 25):
-            time.sleep(1)
-            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
-            split = stream.readline().strip().split(' ')
-            for s in split:
-                if s.startswith('OP_CNT'):
-                    tputs.append(int(s.split(':')[1]))
-        avg_opcount = sum(tputs)/len(tputs)
+    for avg_opcount in avg_opcounts:
         print("%d" % avg_opcount)
     print()
-        
+
+def runBenchmarkAllOiosVectored(lib, threads, op, mode, bsize):
+    oio_sizes = [8, 16, 64]
+    vector_size = [10, 25, 50, 100]
+    print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize) )
+    avg_tputs = []
+    avg_opcounts = []
+    for oio in oio_sizes:
+        for vsize in vector_size:
+            tputs = []
+            opcounts = []
+            for i in range(0, 25):
+                time.sleep(1)
+                stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --vsize ' + str(vsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
+                split = stream.readline().strip().split(' ')
+                for s in split:
+                    if s.startswith('TPUT_GBPS'):
+                        tputs.append(float(s.split(':')[1]))
+                    if s.startswith('OP_CNT'):
+                        opcounts.append(int(s.split(':')[1]))
+            avg_tputs.append(sum(tputs)/len(tputs))
+            avg_opcounts.append(sum(opcounts)/len(opcounts))
+    
+    print(oio_sizes)
+    print(vector_size)
+    print('TPUT_GBPS average over 25 runs for OIO:')
+    for avg_tput in avg_tputs:
+        print("%.2f" % round(avg_tput, 2))
+    print()
+    print('OP_CNT average over 25 runs for OIO:')
+    for avg_opcount in avg_opcounts:
+        print("%d" % avg_opcount)
+    print()
 
 def runBenchmarkAllBlks(lib, threads, op, mode):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode)
@@ -77,8 +105,5 @@ def runBenchmark(lib, threads, op, mode, bsize):
     for output in outputs:
         print(output)
 
-runBenchmarkAllOiosTput('libaio' , 1, 'read', 'rand', 4)
-runBenchmarkAllOiosTput('iouring' , 1, 'read', 'rand', 4)
-
-runBenchmarkAllOiosOpcount('libaio' , 1, 'read', 'rand', 4)
-runBenchmarkAllOiosOpcount('iouring' , 1, 'read', 'rand', 4)
+runBenchmarkAllOiosVectored('libaio' , 1, 'read', 'rand', 4)
+runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
