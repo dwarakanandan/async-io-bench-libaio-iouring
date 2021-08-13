@@ -22,7 +22,7 @@ oio_sizes = [2, 4, 8, 16, 64, 128, 256, 512, 1024]
 
 outputs_global = []
 
-def runBenchmarkAllOios(lib, threads, op, mode, bsize):
+def runBenchmarkAllOiosTput(lib, threads, op, mode, bsize):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     print('TPUT_GBPS average over 10 runs for OIO:')
     print(oio_sizes)
@@ -37,6 +37,23 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
                     tputs.append(float(s.split(':')[1]))
         avg_tput = sum(tputs)/len(tputs)
         print("%.2f" % avg_tput)
+    print()
+
+def runBenchmarkAllOiosOpcount(lib, threads, op, mode, bsize):
+    print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
+    print('OP_CNT average over 10 runs for OIO:')
+    print(oio_sizes)
+    for oio in oio_sizes:
+        tputs = []
+        for i in range(0, 10):
+            time.sleep(2)
+            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
+            split = stream.readline().strip().split(' ')
+            for s in split:
+                if s.startswith('OP_CNT'):
+                    tputs.append(int(s.split(':')[1]))
+        avg_opcount = sum(tputs)/len(tputs)
+        print("%d" % avg_opcount)
     print()
         
 
@@ -60,35 +77,5 @@ def runBenchmark(lib, threads, op, mode, bsize):
     for output in outputs:
         print(output)
 
-def mainBenchmark():
-    for thread in threads:
-        for lib in libs:
-            for op in ops:
-                runBenchmarkAllBlks(lib, thread, op, 'seq')
-                runBenchmarkAllBlks(lib, thread, op, 'rand')
-
-def basicSanityTest():
-    for thread in [1, 8]:
-        runBenchmark('syncio', thread, 'read', 'seq', 4)
-        runBenchmark('libaio', thread, 'read', 'seq', 4)
-        runBenchmark('iouring', thread, 'read', 'seq', 4)
-        print()
-        runBenchmark('syncio', thread, 'read', 'rand', 4)
-        runBenchmark('libaio', thread, 'read', 'rand', 4)
-        runBenchmark('iouring', thread, 'read', 'rand', 4)
-        print()
-        runBenchmark('syncio', thread, 'write', 'seq', 4)
-        runBenchmark('libaio', thread, 'write', 'seq', 4)
-        runBenchmark('iouring', thread, 'write', 'seq', 4)
-        print()
-        runBenchmark('syncio', thread, 'write', 'rand', 4)
-        runBenchmark('libaio', thread, 'write', 'rand', 4)
-        runBenchmark('iouring', thread, 'write', 'rand', 4)
-        print()
-
-# basicSanityTest()
-
-runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
-runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
-# runBenchmarkAllOios('libaio' , 4, 'read', 'rand', 4)
-# runBenchmarkAllOios('iouring' , 4, 'read', 'rand', 4)
+runBenchmarkAllOiosOpcount('libaio' , 1, 'read', 'rand', 4)
+runBenchmarkAllOiosOpcount('iouring' , 1, 'read', 'rand', 4)
