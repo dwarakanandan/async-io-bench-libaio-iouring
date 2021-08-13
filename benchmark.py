@@ -15,9 +15,9 @@ threads = []
 threads.append(1)
 threads.append(8)
 
-bsizes = [2, 4, 16, 64, 128, 256, 512, 1024, 2048, 102400]
+bsizes = [2, 4, 8, 16, 64, 128, 512, 1024, 2048, 102400]
 
-oio_sizes = [1, 2, 8, 16, 64, 128, 512]
+oio_sizes = [2, 4, 8, 16, 64, 128, 512, 1024]
 
 outputs_global = []
 
