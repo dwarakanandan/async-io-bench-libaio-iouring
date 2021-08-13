@@ -2,12 +2,12 @@
 
 using namespace std;
 
-Result_t _async_liburing_vectored(const RuntimeArgs_t& args)
+Result_t _async_liburing_vectored(const RuntimeArgs_t &args)
 {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
     bool isRead = (args.operation == READ);
-	bool isRand = (args.opmode == RANDOM);
+    bool isRand = (args.opmode == RANDOM);
 
     struct io_uring ring;
     struct io_uring_sqe *sqe;
@@ -20,77 +20,82 @@ Result_t _async_liburing_vectored(const RuntimeArgs_t& args)
 
     for (int i = 0; i < args.oio; i++)
     {
-        iovecs_oio[i] = (iovec*) calloc(args.vec_size, sizeof(struct iovec));
+        iovecs_oio[i] = (iovec *)calloc(args.vec_size, sizeof(struct iovec));
         for (int j = 0; j < args.vec_size; j++)
         {
-            iovecs_oio[i][j].iov_base = (char *) aligned_alloc(1024, buffer_size);
+            iovecs_oio[i][j].iov_base = (char *)aligned_alloc(1024, buffer_size);
             iovecs_oio[i][j].iov_len = buffer_size;
         }
 
         /* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i*args.vec_size, isRand);
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i * args.vec_size, isRand);
     }
 
     /* Initialize io_uring */
     ret = io_uring_queue_init(1024, &ring, 0);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
     }
 
     double start = getTime();
-	while (getTime() - start < RUN_TIME) {
-        for (int i = 0; i < args.oio; i++) {
+    while (getTime() - start < RUN_TIME)
+    {
+        for (int i = 0; i < args.oio; i++)
+        {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            isRead ? io_uring_prep_readv(sqe, args.fd, iovecs_oio[i], args.vec_size, offsets[i]) :
-                io_uring_prep_writev(sqe, args.fd, iovecs_oio[i], args.vec_size, offsets[i]);
+            isRead ? io_uring_prep_readv(sqe, args.fd, iovecs_oio[i], args.vec_size, offsets[i]) : io_uring_prep_writev(sqe, args.fd, iovecs_oio[i], args.vec_size, offsets[i]);
         }
 
         /* Submit args.oio operations */
         ret = io_uring_submit(&ring);
-        ops_submitted+= (args.oio * args.vec_size);
+        ops_submitted += (args.oio * args.vec_size);
 
         /* Pre-calculate next set of offsets */
-        for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+(i*args.vec_size), isRand);
+        for (int i = 0; i < args.oio; i++)
+        {
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted + (i * args.vec_size), isRand);
         }
 
         /* Wait for args.oio IO requests to complete */
         timeout.tv_sec = 1;
         ret = io_uring_wait_cqes(&ring, &cqe, args.oio, &timeout, &sigset);
-        if (ret < 0) {
+        if (ret < 0)
+        {
             perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
             return return_error();
         }
 
         /* Check completion event result code */
-        if (cqe->res < 0) {
-            ops_failed+= (args.oio * args.vec_size);
+        if (cqe->res < 0)
+        {
+            ops_failed += (args.oio * args.vec_size);
         }
         io_uring_cq_advance(&ring, args.oio);
 
-        ops_returned+= (args.oio * args.vec_size);
+        ops_returned += (args.oio * args.vec_size);
     }
 
     /* Cleanup io_uring */
     io_uring_queue_exit(&ring);
 
     Result_t results;
-    results.throughput = calculateThroughputGbps(ops_returned-ops_failed, buffer_size);
-    results.op_count = ops_returned-ops_failed;
-	results.ops_submitted = ops_submitted;
-	results.ops_returned = ops_returned;
-	results.ops_failed = ops_failed;
+    results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size);
+    results.op_count = ops_returned - ops_failed;
+    results.ops_submitted = ops_submitted;
+    results.ops_returned = ops_returned;
+    results.ops_failed = ops_failed;
     return results;
 }
 
-Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
+Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t &args)
 {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
     bool isRead = (args.operation == READ);
-	bool isRand = (args.opmode == RANDOM);
+    bool isRand = (args.opmode == RANDOM);
 
     struct io_uring ring;
     struct io_uring_sqe *sqe;
@@ -99,21 +104,22 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
     __kernel_timespec timeout;
     off_t offsets[args.oio];
     sigset_t sigset;
-    char* buffer[args.oio];
+    char *buffer[args.oio];
     int ret;
 
     /* Initialize io_uring */
     ret = io_uring_queue_init(1024, &ring, 0);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
         return return_error();
     }
 
-    iovecs = (iovec*) calloc(args.oio, sizeof(struct iovec));
+    iovecs = (iovec *)calloc(args.oio, sizeof(struct iovec));
     for (int i = 0; i < args.oio; i++)
     {
-        buffer[i] = (char *) aligned_alloc(1024, buffer_size);
-	    memset(buffer[i], '0', buffer_size);
+        buffer[i] = (char *)aligned_alloc(1024, buffer_size);
+        memset(buffer[i], '0', buffer_size);
 
         /* Pre-calculate first set of offsets */
         offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
@@ -123,60 +129,67 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
     }
 
     ret = io_uring_register_buffers(&ring, iovecs, args.oio);
-    if (ret) {
+    if (ret)
+    {
         fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
         return return_error();
     }
 
     double start = getTime();
-	while (getTime() - start < RUN_TIME) {
-        for (int i = 0; i < args.oio; i++) {
+    while (getTime() - start < RUN_TIME)
+    {
+        for (int i = 0; i < args.oio; i++)
+        {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i) :
-                io_uring_prep_write_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i);
+            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i) : io_uring_prep_write_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i);
         }
 
         /* Submit args.oio operations */
         ret = io_uring_submit(&ring);
-        ops_submitted+= args.oio;
+        ops_submitted += args.oio;
 
         /* Pre-calculate next set of offsets */
-        for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
+        for (int i = 0; i < args.oio; i++)
+        {
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted + i, isRand);
         }
 
         /* Wait for args.oio IO requests to complete */
         timeout.tv_sec = 1;
         ret = io_uring_wait_cqes(&ring, &cqe, args.oio, &timeout, &sigset);
-        if (ret < 0) {
+        if (ret < 0)
+        {
             perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
             return return_error();
         }
 
         /* Check completion event result code */
-        if (cqe->res < 0) {
-            ops_failed+= args.oio;
+        if (cqe->res < 0)
+        {
+            ops_failed += args.oio;
         }
         io_uring_cq_advance(&ring, args.oio);
 
-        ops_returned+= args.oio;
+        ops_returned += args.oio;
     }
 
     /* Cleanup io_uring */
     io_uring_queue_exit(&ring);
 
     Result_t results;
-    results.throughput = calculateThroughputGbps(ops_returned-ops_failed, buffer_size);
-    results.op_count = ops_returned-ops_failed;
-	results.ops_submitted = ops_submitted;
-	results.ops_returned = ops_returned;
-	results.ops_failed = ops_failed;
+    results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size);
+    results.op_count = ops_returned - ops_failed;
+    results.ops_submitted = ops_submitted;
+    results.ops_returned = ops_returned;
+    results.ops_failed = ops_failed;
     return results;
 }
 
-Result_t async_liburing(const RuntimeArgs_t& args) {
-    Result_t results = (args.vec_size > 0) ? _async_liburing_vectored(args): _async_liburing_fixed_buffer(args);
-	if (args.debugInfo) printOpStats(args, results);
+Result_t async_liburing(const RuntimeArgs_t &args)
+{
+    Result_t results = (args.vec_size > 0) ? _async_liburing_vectored(args) : _async_liburing_fixed_buffer(args);
+    if (args.debugInfo)
+        printOpStats(args, results);
     return results;
 }
