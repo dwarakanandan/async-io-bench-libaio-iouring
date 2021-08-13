@@ -96,16 +96,12 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
     struct io_uring ring;
     struct io_uring_sqe *sqe;
     struct io_uring_cqe *cqe;
+    struct iovec *iovecs;
     __kernel_timespec timeout;
     off_t offsets[args.oio];
     sigset_t sigset;
+    char* buffer[args.oio];
     int ret;
-
-    for (int i = 0; i < args.oio; i++)
-    {
-        /* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
-    }
 
     /* Initialize io_uring */
     ret = io_uring_queue_init(1024, &ring, 0);
@@ -114,13 +110,20 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
         return return_error();
     }
 
-    struct iovec iov[args.oio];
-    for (int i = 0; i < args.oio; i++) {
-        iov[i].iov_base = (char *) aligned_alloc(1024, buffer_size);
-        iov[i].iov_len = buffer_size;
+    iovecs = (iovec*) calloc(args.oio, sizeof(struct iovec));
+    for (int i = 0; i < args.oio; i++)
+    {
+        buffer[i] = (char *) aligned_alloc(1024, buffer_size);
+	    memset(buffer[i], '0', buffer_size);
+
+        /* Pre-calculate first set of offsets */
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
+
+        iovecs[i].iov_base = buffer[i];
+        iovecs[i].iov_len = buffer_size;
     }
 
-    ret = io_uring_register_buffers(&ring, iov, args.oio);
+    ret = io_uring_register_buffers(&ring, iovecs, args.oio);
     if (ret) {
         fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
         return return_error();
@@ -131,8 +134,8 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
         for (int i = 0; i < args.oio; i++) {
             /* Get a Submission Queue Entry */
             sqe = io_uring_get_sqe(&ring);
-            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iov[i].iov_base, buffer_size, offsets[i], i) :
-                io_uring_prep_write_fixed(sqe, args.fd, iov[i].iov_base, buffer_size, offsets[i], i);
+            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i) :
+                io_uring_prep_write_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i);
         }
 
         /* Submit args.oio operations */
@@ -183,9 +186,7 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
 }
 
 Result_t async_liburing(const RuntimeArgs_t& args) {
-    Result_t results = _async_liburing(args);
-	if (args.debugInfo) printOpStats(args, results);
-    results = _async_liburing_fixed_buffer(args);
+    Result_t results = _async_liburing_fixed_buffer(args);
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }
