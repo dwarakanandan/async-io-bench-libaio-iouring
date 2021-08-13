@@ -36,7 +36,7 @@ def runBenchmarkAllOiosTput(lib, threads, op, mode, bsize):
                 if s.startswith('TPUT_GBPS'):
                     tputs.append(float(s.split(':')[1]))
         avg_tput = sum(tputs)/len(tputs)
-        print("%.2f" % avg_tput)
+        print("%.2f" % round(avg_tput, 2))
     print()
 
 def runBenchmarkAllOiosOpcount(lib, threads, op, mode, bsize):
