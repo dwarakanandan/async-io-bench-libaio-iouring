@@ -38,11 +38,11 @@ void fileNameCheck(int argc, char const *argv[]) {
 RuntimeArgs_t getDefaultArgs() {
     RuntimeArgs_t args;
     args.thread_count = 1;
-    args.blk_size = 16;
+    args.blk_size = 4;
     args.debugInfo = false;
     args.operation = READ;
     args.opmode = SEQUENTIAL;
-    args.oio = 10;
+    args.oio = 8;
     args.lib = SYNCIO;
     args.odirect = true;
     return args;
