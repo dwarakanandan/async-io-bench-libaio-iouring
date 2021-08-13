@@ -23,7 +23,8 @@ outputs_global = []
 
 def runBenchmarkAllOios(lib, threads, op, mode, bsize):
     print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-
+    print('OIO sizes:')
+    print(oio_sizes)
     for oio in oio_sizes:
         tputs = []
         for i in range(0, 10):
@@ -32,9 +33,8 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
             for s in split:
                 if s.startswith('TPUT_GBPS'):
                     tputs.append(float(s.split(':')[1]))
-        print(tputs)
-        print(sum(tputs)/len(tputs))
-
+        avg_tput = sum(tputs)/len(tputs)
+        print("%.2f" % avg_tput)
     print()
         
 
