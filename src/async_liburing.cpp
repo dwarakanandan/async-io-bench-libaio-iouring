@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Result_t _async_liburing(const RuntimeArgs_t& args)
+Result_t _async_liburing_vector(const RuntimeArgs_t& args)
 {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
@@ -176,8 +176,9 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t& args)
 }
 
 Result_t async_liburing(const RuntimeArgs_t& args) {
-    // Result_t results = _async_liburing_fixed_buffer(args);
-    Result_t results = _async_liburing(args);
+    Result_t results = _async_liburing_fixed_buffer(args);
+    if (args.debugInfo) printOpStats(args, results);
+    results = _async_liburing_vector(args);
 	if (args.debugInfo) printOpStats(args, results);
     return results;
 }
