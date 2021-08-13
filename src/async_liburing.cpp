@@ -14,7 +14,6 @@ Result_t _async_liburing_vectored(const RuntimeArgs_t &args)
     struct io_uring_cqe *cqe;
     struct iovec *iovecs_oio[args.oio];
     __kernel_timespec timeout;
-    sigset_t sigset;
     off_t offsets[args.oio];
     int ret;
 
@@ -106,7 +105,6 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t &args)
     struct iovec *iovecs;
     __kernel_timespec timeout;
     off_t offsets[args.oio];
-    sigset_t sigset;
     char *buffer[args.oio];
     int ret;
 
