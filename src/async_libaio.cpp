@@ -105,22 +105,26 @@ Result_t _async_libaio_vectored(const RuntimeArgs_t& args) {
 	struct iocb *cbs[args.oio];
 	struct io_event events[args.oio];
 	timespec timeout;
-	char* buffer[args.oio];
+	struct iovec *iovecs_oio[args.oio];
 	off_t offsets[args.oio];
 	int ret;
 
 	for (int i = 0; i < args.oio; i++)
 	{
-		buffer[i] = (char *) aligned_alloc(1024, buffer_size);
-	    memset(buffer[i], '0', buffer_size);
+		iovecs_oio[i] = (iovec*) calloc(args.vec_size, sizeof(struct iovec));
+        for (int j = 0; j < args.vec_size; j++)
+        {
+            iovecs_oio[i][j].iov_base = (char *) aligned_alloc(1024, buffer_size);
+            iovecs_oio[i][j].iov_len = buffer_size;
+        }
 
 		/* Pre-calculate first set of offsets */
-        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i*args.vec_size, isRand);
 
 		memset(&(cb[i]), 0, sizeof(cb[i]));
 		cb[i].aio_fildes = args.fd;
-		cb[i].aio_buf = (uint64_t) buffer[i];
-		cb[i].aio_nbytes = buffer_size;
+		cb[i].aio_buf = (uint64_t) iovecs_oio[i];
+		cb[i].aio_nbytes = args.vec_size;
 		cbs[i] = &(cb[i]);
 	}
 
@@ -145,11 +149,11 @@ Result_t _async_libaio_vectored(const RuntimeArgs_t& args) {
 			perror(getErrorMessageWithTid(args, "io_submit"));
 			return return_error();
 		}
-		ops_submitted +=ret;
+		ops_submitted += (args.oio * args.vec_size);
 
 		/* Pre-calculate next set of offsets */
         for (int i = 0; i < args.oio; i++) {
-            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+i, isRand);
+            offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted+(i*args.vec_size), isRand);
         }
 
 		/* Wait for args.oio requests to complete */
@@ -159,13 +163,13 @@ Result_t _async_libaio_vectored(const RuntimeArgs_t& args) {
 			fprintf(stderr, "io_getevents failed with code: %d\n", ret);
 			return return_error();
 		}
-		ops_returned+=ret;
+		ops_returned+= (args.oio * args.vec_size);
 
 		/* Check completion event result code */
 		for (int i = 0; i < ret; i++)
 		{
 			if (events[i].res < 0) {
-				ops_failed++;
+				ops_failed+= args.vec_size;
 			}
 		}
 	}
