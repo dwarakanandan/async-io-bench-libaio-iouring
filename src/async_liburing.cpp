@@ -172,7 +172,7 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t &args)
             /* Check completion event result code */
             if (cqe->res < 0)
             {
-                ops_failed ++;
+                ops_failed++;
             }
             io_uring_cqe_seen(&ring, cqe);
         }
