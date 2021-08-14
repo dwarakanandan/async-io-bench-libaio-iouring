@@ -1,7 +1,7 @@
 import os
 import time
 
-base_command = './build/benchmark --file /dev/md127 '
+base_command = 'taskset -c 9 ./build/benchmark --file /dev/md127 '
 
 libs = []
 libs.append('syncio')
@@ -165,8 +165,8 @@ def runBenchmark(lib, threads, op, mode, bsize):
         print(output)
 
 
-# runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
-# runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
+runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
+runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
 
 # runBenchmarkAllOiosVectored('libaio' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
@@ -174,5 +174,5 @@ def runBenchmark(lib, threads, op, mode, bsize):
 # runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosVectoredNodirect('iouring' , 1, 'read', 'rand', 4)
 
-runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
-runBenchmarkAllOiosNodirect('iouring' , 1, 'read', 'rand', 4)
+# runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
+# runBenchmarkAllOiosNodirect('iouring' , 1, 'read', 'rand', 4)
