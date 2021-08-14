@@ -13,7 +13,6 @@
 #define _100MB (1024 * 1024 * 100)
 #define _1GB (1024 * 1024 * 1024 * 1L)
 #define _100GB (1024 * 1024 * 1024 * 100L)
-#define RUN_TIME 1
 
 enum OPERATION
 {
@@ -43,6 +42,7 @@ struct RuntimeArgs_t
     int blk_size;
     int oio;
     int vec_size;
+    int runtime;
     off_t read_offset;
     off_t max_offset;
     bool debugInfo;

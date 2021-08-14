@@ -39,7 +39,7 @@ Result_t _async_liburing_vectored(const RuntimeArgs_t &args)
     }
 
     double start = getTime();
-    while (getTime() - start < RUN_TIME)
+    while (getTime() - start < args.runtime)
     {
         for (int i = 0; i < args.oio; i++)
         {
@@ -137,7 +137,7 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t &args)
     }
 
     double start = getTime();
-    while (getTime() - start < RUN_TIME)
+    while (getTime() - start < args.runtime)
     {
         for (int i = 0; i < args.oio; i++)
         {

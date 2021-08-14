@@ -13,7 +13,7 @@ Result_t _syncio(const RuntimeArgs_t &args)
     memset(buffer, '0', buffer_size);
 
     double start = getTime();
-    while (getTime() - start < RUN_TIME)
+    while (getTime() - start < args.runtime)
     {
         ssize_t opCount = isRead ? pread(args.fd, buffer, buffer_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand)) : pwrite(args.fd, buffer, buffer_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand));
         ops_submitted++;
@@ -49,7 +49,7 @@ Result_t _syncio_vectored(const RuntimeArgs_t &args)
     }
 
     double start = getTime();
-    while (getTime() - start < RUN_TIME)
+    while (getTime() - start < args.runtime)
     {
         ssize_t opCount = isRead ? preadv(args.fd, iovecs, args.vec_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand)) : pwritev(args.fd, iovecs, args.vec_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand));
         ops_submitted += args.vec_size;

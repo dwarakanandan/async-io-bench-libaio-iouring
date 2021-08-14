@@ -31,6 +31,7 @@ void fileNameCheck(int argc, char const *argv[])
             << "--lib <syncio|libaio|liburing> "
             << "--oio <outstanding_io_count> "
             << "--vsize <vectored IO batch size> "
+            << "--runtime <runtime seconds> "
             << "--nodirect (disable O_DIRECT) "
             << "--debug (show_debug) " << endl;
 
@@ -53,6 +54,7 @@ RuntimeArgs_t getDefaultArgs()
     args.lib = SYNCIO;
     args.odirect = true;
     args.vec_size = 0;
+    args.runtime = 1;
     return args;
 }
 
@@ -89,6 +91,10 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[])
         {
             args.vec_size = atoi(argv[i + 1]);
         }
+        if (strcmp(argv[i], "--runtime") == 0)
+        {
+            args.runtime = atoi(argv[i + 1]);
+        }
         if (strcmp(argv[i], "--debug") == 0)
         {
             args.debugInfo = true;
@@ -121,6 +127,7 @@ void runBenchmark(RuntimeArgs_t &userArgs, Result_t (*benchmarkFunction)(const R
         args.oio = userArgs.oio;
         args.max_offset = userArgs.max_offset;
         args.vec_size = userArgs.vec_size;
+        args.runtime = userArgs.runtime;
         threads.push_back(std::async(benchmarkFunction, args));
     }
 
