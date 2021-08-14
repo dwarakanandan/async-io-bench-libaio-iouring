@@ -44,9 +44,9 @@ void fileOpen(RuntimeArgs_t *args)
     }
 }
 
-double calculateThroughputGbps(uint64_t ops, size_t buffer_size)
+double calculateThroughputGbps(uint64_t ops, size_t buffer_size, int runtime)
 {
-    return ((ops * buffer_size) / (1024.0 * 1024 * 1024 * RUN_TIME));
+    return ((ops * buffer_size) / (1024.0 * 1024 * 1024 * runtime));
 }
 
 off_t getOffset(off_t maxOffset, off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand)

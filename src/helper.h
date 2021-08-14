@@ -76,7 +76,7 @@ const char *getErrorMessageWithTid(const RuntimeArgs_t &args, std::string error)
 
 void fileOpen(RuntimeArgs_t *args);
 
-double calculateThroughputGbps(uint64_t ops, size_t buffer_size);
+double calculateThroughputGbps(uint64_t ops, size_t buffer_size, int runtime);
 
 off_t getOffset(off_t maxOffset, off_t initialOffset, size_t buffer_size, uint64_t iteration, bool isRand);
 

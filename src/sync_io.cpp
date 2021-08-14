@@ -25,7 +25,7 @@ Result_t _syncio(const RuntimeArgs_t &args)
     }
 
     Result_t results;
-    results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size);
+    results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, args.runtime);
     results.op_count = ops_returned - ops_failed;
     results.ops_submitted = ops_submitted;
     results.ops_returned = ops_returned;
@@ -61,7 +61,7 @@ Result_t _syncio_vectored(const RuntimeArgs_t &args)
     }
 
     Result_t results;
-    results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size);
+    results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, args.runtime);
     results.op_count = ops_returned - ops_failed;
     results.ops_submitted = ops_submitted;
     results.ops_returned = ops_returned;
