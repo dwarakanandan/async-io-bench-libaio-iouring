@@ -417,11 +417,7 @@ Result_t _async_liburing_fixed_buffer_sqe_polling(const RuntimeArgs_t &args)
 Result_t async_liburing(const RuntimeArgs_t &args)
 {
     Result_t results;
-    if (geteuid())
-    {
-        results = (args.vec_size > 0) ? _async_liburing_vectored(args) : _async_liburing_fixed_buffer(args);
-    }
-    else
+    if (geteuid() == 0)
     {
         /* SQE kernel polling only possible with root access */
         if (args.debugInfo) {
@@ -430,6 +426,10 @@ Result_t async_liburing(const RuntimeArgs_t &args)
             cout << msg.str();
         }
         results = (args.vec_size > 0) ? _async_liburing_vectored_sqe_polling(args) : _async_liburing_fixed_buffer_sqe_polling(args);
+    }
+    else
+    {
+        results = (args.vec_size > 0) ? _async_liburing_vectored(args) : _async_liburing_fixed_buffer(args);
     }
 
     if (args.debugInfo)
