@@ -2,25 +2,7 @@ import os
 import time
 
 base_command = 'taskset -c 20 ./build/benchmark --file /dev/md127 '
-
-libs = []
-libs.append('syncio')
-libs.append('libaio')
-libs.append('iouring')
-
-ops = []
-ops.append('read')
-ops.append('write')
-
-threads = []
-threads.append(1)
-threads.append(8)
-
-bsizes = [2, 4, 8, 16, 64, 128, 512, 1024, 2048, 102400]
-
-
-
-outputs_global = []
+base_command_without_taskset = './build/benchmark --file /dev/md127 '
 
 def runBenchmarkAllOios(lib, threads, op, mode, bsize):
     oio_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
@@ -144,35 +126,48 @@ def runBenchmarkAllOiosVectoredNodirect(lib, threads, op, mode, bsize):
         print("%d" % avg_opcount)
     print('\n')
 
-def runBenchmarkAllBlks(lib, threads, op, mode):
-    print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode)
-    outputs = []
-    for bsize in bsizes:
-        stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
-        outputs.append(stream.readline().strip())
-    outputs_global.append(outputs)
-    for output in outputs:
-        print(output)
-    print()
+def runBenchmarkAllThreads(lib, op, mode, bsize, oio):
+    thread_counts = [1, 4, 8, 16, 32]
+    print('Running runBenchmarkAllThreads lib:' + lib + ' op:' + op + ' mode:' + mode)
+    avg_tputs = []
+    avg_opcounts = []
+    for thread in thread_counts:
+        tputs = []
+        opcounts = []
+        for i in range(0, 10):
+            stream = os.popen(base_command_without_taskset + '--threads ' + str(thread) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib + ' --oio ' + str(oio))
+            split = stream.readline().strip().split(' ')
+            for s in split:
+                if s.startswith('TPUT_GBPS'):
+                    tputs.append(float(s.split(':')[1]))
+                if s.startswith('OP_CNT'):
+                    opcounts.append(int(s.split(':')[1]))
+        avg_tputs.append(sum(tputs)/len(tputs))
+        avg_opcounts.append(sum(opcounts)/len(opcounts))
 
-def runBenchmark(lib, threads, op, mode, bsize):
-    # print('Running lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
-    outputs = []
-    stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
-    outputs.append(stream.readline().strip())
-    outputs_global.append(outputs)
-    for output in outputs:
-        print(output)
+    print(thread_counts)
+    print('TPUT_GBPS average over 10 runs for thread_counts:')
+    for avg_tput in avg_tputs:
+        print("%.2f" % round(avg_tput, 2))
+    print('\n')
+    print('OP_CNT average over 10 runs for thread_counts:')
+    for avg_opcount in avg_opcounts:
+        print("%d" % avg_opcount)
+    print('\n')
 
 
-runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
-runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
+# runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
+# runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
 
-runBenchmarkAllOiosVectored('libaio' , 1, 'read', 'rand', 4)
-runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
+# runBenchmarkAllOiosVectored('libaio' , 1, 'read', 'rand', 4)
+# runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
 
 # runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosVectoredNodirect('iouring' , 1, 'read', 'rand', 4)
 
 # runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosNodirect('iouring' , 1, 'read', 'rand', 4)
+
+runBenchmarkAllThreads('syncio', 'read', 'rand', 4, 128)
+runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 128)
+runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 128)
