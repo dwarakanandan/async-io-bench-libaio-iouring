@@ -63,9 +63,12 @@ libaio vs io_uring at varying Outstanding IO Ops:
 Vectored libaio vs io_uring at varying Outstanding IO Ops and Vector batch sizes:
 ![libaio-iouring-vectored](benchmarks/libaio-iouring-vectored.png)
 
-Unbuffered io_uring (O_DIRECT enabled) vs Buffered io_uring (O_DIRECT disabled):
-![iouring-vectored-o_direct](benchmarks/iouring-vectored-o_direct.png)
+syncio vs libaio vs io_uring at varying thread counts:
+![threads](benchmarks/threads.png)
+
+Vectored syncio vs libaio vs io_uring at varying thread counts:
+![threads-vectored](benchmarks/threads-vectored.png)
 
 Unbuffered io_uring (O_DIRECT enabled) vs Buffered io_uring (O_DIRECT disabled):
-![iouring-vectored-o_direct](benchmarks/iouring-vectored-o_direct.png)
+![iouring-vectored-odirect](benchmarks/iouring-vectored-odirect.png)
 
