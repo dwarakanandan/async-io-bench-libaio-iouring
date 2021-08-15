@@ -13,7 +13,6 @@ Result_t _async_liburing_vectored(const RuntimeArgs_t &args)
     struct io_uring_sqe *sqe;
     struct io_uring_cqe *cqe;
     struct iovec *iovecs_oio[args.oio];
-    __kernel_timespec timeout;
     off_t offsets[args.oio];
     int ret;
 
@@ -59,23 +58,22 @@ Result_t _async_liburing_vectored(const RuntimeArgs_t &args)
         }
 
         /* Wait for args.oio IO requests to complete */
-        for (int i = 0; i < args.oio; i++)
+        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
+        if (ret < 0)
         {
-            timeout.tv_sec = 1;
-            ret = io_uring_wait_cqe_timeout(&ring, &cqe, &timeout);
-            if (ret < 0)
-            {
-                perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-                return return_error();
-            }
-
+            fprintf(stderr, "Error io_uring_wait_cqe_nr: %s\n", strerror(-ret));
+            return return_error();
+        }
+        size_t head = 0;
+        io_uring_for_each_cqe(&ring, head, cqe)
+        {
             /* Check completion event result code */
             if (cqe->res < 0)
             {
-                ops_failed += args.vec_size;
+                ops_failed++;
             }
-            io_uring_cqe_seen(&ring, cqe);
         }
+        io_uring_cq_advance(&ring, args.oio);
 
         ops_returned += (args.oio * args.vec_size);
     }
@@ -103,7 +101,6 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t &args)
     struct io_uring_sqe *sqe;
     struct io_uring_cqe *cqe;
     struct iovec *iovecs;
-    __kernel_timespec timeout;
     off_t offsets[args.oio];
     char *buffer[args.oio];
     int ret;
@@ -157,23 +154,22 @@ Result_t _async_liburing_fixed_buffer(const RuntimeArgs_t &args)
         }
 
         /* Wait for args.oio IO requests to complete */
-        for (int i = 0; i < args.oio; i++)
+        ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
+        if (ret < 0)
         {
-            timeout.tv_sec = 1;
-            ret = io_uring_wait_cqe_timeout(&ring, &cqe, &timeout);
-            if (ret < 0)
-            {
-                perror(getErrorMessageWithTid(args, "io_uring_wait_cqe"));
-                return return_error();
-            }
-
+            fprintf(stderr, "Error io_uring_wait_cqe_nr: %s\n", strerror(-ret));
+            return return_error();
+        }
+        size_t head = 0;
+        io_uring_for_each_cqe(&ring, head, cqe)
+        {
             /* Check completion event result code */
             if (cqe->res < 0)
             {
                 ops_failed++;
             }
-            io_uring_cqe_seen(&ring, cqe);
         }
+        io_uring_cq_advance(&ring, args.oio);
 
         ops_returned += args.oio;
     }
