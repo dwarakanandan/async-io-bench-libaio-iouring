@@ -128,7 +128,7 @@ def runBenchmarkAllOiosVectoredNodirect(lib, threads, op, mode, bsize):
 
 def runBenchmarkAllThreads(lib, op, mode, bsize, oio):
     thread_counts = [1, 4, 8, 16, 32]
-    print('Running runBenchmarkAllThreads lib:' + lib + ' op:' + op + ' mode:' + mode + ' bsize:' + bsize + ' oio:' + oio)
+    print('Running runBenchmarkAllThreads lib:' + lib + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize) + ' oio:' + str(oio))
     avg_tputs = []
     avg_opcounts = []
     for thread in thread_counts:
