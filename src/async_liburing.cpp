@@ -420,7 +420,8 @@ Result_t async_liburing(const RuntimeArgs_t &args)
     if (geteuid() == 0)
     {
         /* SQE kernel polling only possible with root access */
-        if (args.debugInfo) {
+        if (args.debugInfo)
+        {
             std::stringstream msg;
             msg << "TID:" << args.thread_id << " SQE kernel polling enabled" << endl;
             cout << msg.str();
