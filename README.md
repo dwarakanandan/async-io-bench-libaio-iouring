@@ -51,3 +51,13 @@ Build tested with:
 benchmark --file <file_name> --threads <thread_count> --bsize <block_size_kb> --op <read|write> --mode <seq|rand> --lib <syncio|libaio|liburing> --oio <outstanding_io_count> --vsize <vectored IO batch size> --nodirect (disable O_DIRECT) --debug (show_debug)
 ```
 
+#### Benchmarks:
+
+![perf-stats](benchmarks/perf-stats.png)
+
+![libaio-iouring](benchmarks/libaio-iouring.png)
+
+![libaio-iouring-vectored](benchmarks/libaio-iouring-vectored.png)
+
+![iouring-vectored-o_direct](benchmarks/iouring-vectored-o_direct.png)
+
