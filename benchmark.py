@@ -127,7 +127,7 @@ def runBenchmarkAllOiosVectoredNodirect(lib, threads, op, mode, bsize):
     print('\n')
 
 def runBenchmarkAllThreads(lib, op, mode, bsize, oio):
-    thread_counts = [1, 4, 8, 16, 32]
+    thread_counts = [1, 4, 8, 16, 32, 64, 128]
     print('Running runBenchmarkAllThreads lib:' + lib + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize) + ' oio:' + str(oio))
     avg_tputs = []
     avg_opcounts = []
@@ -150,28 +150,62 @@ def runBenchmarkAllThreads(lib, op, mode, bsize, oio):
     for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
     print('\n')
-    print('OP_CNT average over 10 runs for thread_counts:')
-    for avg_opcount in avg_opcounts:
-        print("%d" % avg_opcount)
+
+def runBenchmarkAllThreadsVectored(lib, op, mode, bsize, oio, vsize):
+    thread_counts = [1, 4, 8, 16, 32, 64, 128]
+    print('Running runBenchmarkAllThreads lib:' + lib + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize) + ' oio:' + str(oio) + ' vsize: ' + str(vsize))
+    avg_tputs = []
+    avg_opcounts = []
+    for thread in thread_counts:
+        tputs = []
+        opcounts = []
+        for i in range(0, 10):
+            stream = os.popen(base_command_without_taskset + '--threads ' + str(thread) + ' --bsize ' + str(bsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib + ' --oio ' + str(oio) + ' --vsize ' + str(vsize))
+            split = stream.readline().strip().split(' ')
+            for s in split:
+                if s.startswith('TPUT_GBPS'):
+                    tputs.append(float(s.split(':')[1]))
+                if s.startswith('OP_CNT'):
+                    opcounts.append(int(s.split(':')[1]))
+        avg_tputs.append(sum(tputs)/len(tputs))
+        avg_opcounts.append(sum(opcounts)/len(opcounts))
+
+    print(thread_counts)
+    print('TPUT_GBPS average over 10 runs for thread_counts:')
+    for avg_tput in avg_tputs:
+        print("%.2f" % round(avg_tput, 2))
     print('\n')
 
 
 # runBenchmarkAllOios('libaio' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
 
+
 # runBenchmarkAllOiosVectored('libaio' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
+
 
 # runBenchmarkAllOiosVectored('iouring' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosVectoredNodirect('iouring' , 1, 'read', 'rand', 4)
 
+
 # runBenchmarkAllOios('iouring' , 1, 'read', 'rand', 4)
 # runBenchmarkAllOiosNodirect('iouring' , 1, 'read', 'rand', 4)
 
-runBenchmarkAllThreads('syncio', 'read', 'rand', 4, 8)
-runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 8)
-runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 8)
-runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 64)
-runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 64)
-runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 128)
-runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 128)
+
+# runBenchmarkAllThreads('syncio', 'read', 'rand', 4, 1)
+# runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 8)
+# runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 8)
+# runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 64)
+# runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 64)
+# runBenchmarkAllThreads('libaio', 'read', 'rand', 4, 128)
+# runBenchmarkAllThreads('iouring', 'read', 'rand', 4, 128)
+
+
+runBenchmarkAllThreadsVectored('syncio', 'read', 'rand', 4, 1, 100)
+runBenchmarkAllThreadsVectored('libaio', 'read', 'rand', 4, 8, 100)
+runBenchmarkAllThreadsVectored('iouring', 'read', 'rand', 4, 8, 100)
+runBenchmarkAllThreadsVectored('libaio', 'read', 'rand', 4, 64, 50)
+runBenchmarkAllThreadsVectored('iouring', 'read', 'rand', 4, 64, 50)
+runBenchmarkAllThreadsVectored('libaio', 'read', 'rand', 4, 128, 10)
+runBenchmarkAllThreadsVectored('iouring', 'read', 'rand', 4, 128, 10)

@@ -66,3 +66,6 @@ Vectored libaio vs io_uring at varying Outstanding IO Ops and Vector batch sizes
 Unbuffered io_uring (O_DIRECT enabled) vs Buffered io_uring (O_DIRECT disabled):
 ![iouring-vectored-o_direct](benchmarks/iouring-vectored-o_direct.png)
 
+Unbuffered io_uring (O_DIRECT enabled) vs Buffered io_uring (O_DIRECT disabled):
+![iouring-vectored-o_direct](benchmarks/iouring-vectored-o_direct.png)
+
