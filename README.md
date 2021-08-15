@@ -1,4 +1,4 @@
-# dmlab - Benchmarking IO Operations
+# Benchmarking IO Operations
 
 A benchmarking tool for comparing sync-io, libaio and io_uring performance
 <br />
