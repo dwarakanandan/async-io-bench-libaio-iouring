@@ -23,14 +23,14 @@ bsizes = [2, 4, 8, 16, 64, 128, 512, 1024, 2048, 102400]
 outputs_global = []
 
 def runBenchmarkAllOios(lib, threads, op, mode, bsize):
-    oio_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512]
+    oio_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
     print('Running runBenchmarkAllOios lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     avg_tputs = []
     avg_opcounts = []
     for oio in oio_sizes:
         tputs = []
         opcounts = []
-        for i in range(0, 5):
+        for i in range(0, 10):
             stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
             split = stream.readline().strip().split(' ')
             for s in split:
@@ -42,24 +42,24 @@ def runBenchmarkAllOios(lib, threads, op, mode, bsize):
         avg_opcounts.append(sum(opcounts)/len(opcounts))
     
     print(oio_sizes)
-    print('TPUT_GBPS average over 5 runs for OIO:')
+    print('TPUT_GBPS average over 10 runs for OIO:')
     for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
     print('\n')
-    print('OP_CNT average over 5 runs for OIO:')
+    print('OP_CNT average over 10 runs for OIO:')
     for avg_opcount in avg_opcounts:
         print("%d" % avg_opcount)
     print('\n')
 
 def runBenchmarkAllOiosNodirect(lib, threads, op, mode, bsize):
-    oio_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512]
+    oio_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
     print('Running runBenchmarkAllOiosNodirect lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     avg_tputs = []
     avg_opcounts = []
     for oio in oio_sizes:
         tputs = []
         opcounts = []
-        for i in range(0, 5):
+        for i in range(0, 10):
             stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib + ' --nodirect')
             split = stream.readline().strip().split(' ')
             for s in split:
@@ -71,11 +71,11 @@ def runBenchmarkAllOiosNodirect(lib, threads, op, mode, bsize):
         avg_opcounts.append(sum(opcounts)/len(opcounts))
     
     print(oio_sizes)
-    print('TPUT_GBPS average over 5 runs for OIO:')
+    print('TPUT_GBPS average over 10 runs for OIO:')
     for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
     print('\n')
-    print('OP_CNT average over 5 runs for OIO:')
+    print('OP_CNT average over 10 runs for OIO:')
     for avg_opcount in avg_opcounts:
         print("%d" % avg_opcount)
     print('\n')
@@ -90,7 +90,7 @@ def runBenchmarkAllOiosVectored(lib, threads, op, mode, bsize):
         for vsize in vector_size:
             tputs = []
             opcounts = []
-            for i in range(0, 5):
+            for i in range(0, 10):
                 stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --vsize ' + str(vsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib)
                 split = stream.readline().strip().split(' ')
                 for s in split:
@@ -103,11 +103,11 @@ def runBenchmarkAllOiosVectored(lib, threads, op, mode, bsize):
     
     print(oio_sizes)
     print(vector_size)
-    print('TPUT_GBPS average over 5 runs for OIO:')
+    print('TPUT_GBPS average over 10 runs for OIO:')
     for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
     print('\n')
-    print('OP_CNT average over 5 runs for OIO:')
+    print('OP_CNT average over 10 runs for OIO:')
     for avg_opcount in avg_opcounts:
         print("%d" % avg_opcount)
     print('\n')
@@ -122,7 +122,7 @@ def runBenchmarkAllOiosVectoredNodirect(lib, threads, op, mode, bsize):
         for vsize in vector_size:
             tputs = []
             opcounts = []
-            for i in range(0, 5):
+            for i in range(0, 10):
                 stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --vsize ' + str(vsize) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib + ' --nodirect')
                 split = stream.readline().strip().split(' ')
                 for s in split:
@@ -135,11 +135,11 @@ def runBenchmarkAllOiosVectoredNodirect(lib, threads, op, mode, bsize):
     
     print(oio_sizes)
     print(vector_size)
-    print('TPUT_GBPS average over 5 runs for OIO:')
+    print('TPUT_GBPS average over 10 runs for OIO:')
     for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
     print('\n')
-    print('OP_CNT average over 5 runs for OIO:')
+    print('OP_CNT average over 10 runs for OIO:')
     for avg_opcount in avg_opcounts:
         print("%d" % avg_opcount)
     print('\n')
