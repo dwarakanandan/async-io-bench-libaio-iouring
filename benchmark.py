@@ -1,7 +1,7 @@
 import os
 import time
 
-base_command = 'taskset -c 9 ./build/benchmark --file /dev/md127 '
+base_command = 'taskset -c 20 ./build/benchmark --file /dev/md127 '
 
 libs = []
 libs.append('syncio')
