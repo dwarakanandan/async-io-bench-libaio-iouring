@@ -54,21 +54,27 @@ benchmark --file <file_name> --threads <thread_count> --bsize <block_size_kb> --
 
 #### Benchmarks:
 
-Perf stats for 4kb RANDOM READ. Async Outstanding IO = 128. Vectored operation batch size = 10:
+**Perf stats for 4kb RANDOM READ. Async Outstanding IO = 128. Vectored operation batch size = 10:**
 ![perf-stats](benchmarks/perf-stats.png)
+<br />
 
-libaio vs io_uring at varying Outstanding IO Ops:
+**libaio vs io_uring at varying Outstanding IO Ops:**
 ![libaio-iouring](benchmarks/libaio-iouring.png)
+<br />
 
-Vectored libaio vs io_uring at varying Outstanding IO Ops and Vector batch sizes:
+**Vectored libaio vs io_uring at varying Outstanding IO Ops and Vector batch sizes:**
 ![libaio-iouring-vectored](benchmarks/libaio-iouring-vectored.png)
+<br />
 
-syncio vs libaio vs io_uring at varying thread counts:
+**syncio vs libaio vs io_uring at varying thread counts:**
 ![threads](benchmarks/threads.png)
+<br />
 
-Vectored syncio vs libaio vs io_uring at varying thread counts:
+**Vectored syncio vs libaio vs io_uring at varying thread counts:**
 ![threads-vectored](benchmarks/threads-vectored.png)
+<br />
 
-Unbuffered io_uring (O_DIRECT enabled) vs Buffered io_uring (O_DIRECT disabled):
+**Unbuffered io_uring (O_DIRECT enabled) vs Buffered io_uring (O_DIRECT disabled):**
 ![iouring-vectored-odirect](benchmarks/iouring-vectored-odirect.png)
+<br />
 
