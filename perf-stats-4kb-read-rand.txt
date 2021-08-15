@@ -1,0 +1,121 @@
+Performance stats 4kb RANDOM READ:
+
+
+SYNCIO RD RND BLKS_KB:4 OIO:1 OP_CNT:6964 TPUT_GBPS:0.026566
+Performance counter stats for './build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib syncio --oio 128':
+160.87 msec task-clock                #    0.161 CPUs utilized          
+6,966      context-switches          #    0.043 M/sec                  
+5      cpu-migrations            #    0.031 K/sec                  
+141      page-faults               #    0.876 K/sec                  
+13,22,36,244      cycles                    #    0.822 GHz                    
+10,79,85,267      instructions              #    0.82  insn per cycle         
+2,14,34,724      branches                  #  133.244 M/sec                  
+6,01,748      branch-misses             #    2.81% of all branches        
+1.001773856 seconds time elapsed
+0.025245000 seconds user
+0.185133000 seconds sys
+
+
+LIBAIO RD RND BLKS_KB:4 OIO:128 OP_CNT:128384 TPUT_GBPS:0.489746
+Performance counter stats for './build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib libaio --oio 128':
+328.34 msec task-clock                #    0.318 CPUs utilized          
+54,388      context-switches          #    0.166 M/sec                  
+2      cpu-migrations            #    0.006 K/sec                  
+305      page-faults               #    0.929 K/sec                  
+1,17,49,43,196      cycles                    #    3.578 GHz                    
+1,68,28,82,495      instructions              #    1.43  insn per cycle         
+33,13,87,552      branches                  # 1009.287 M/sec                  
+52,53,343      branch-misses             #    1.59% of all branches        
+1.031906849 seconds time elapsed
+0.004879000 seconds user
+0.414770000 seconds sys
+
+
+IOURING RD RND BLKS_KB:4 OIO:128 OP_CNT:128384 TPUT_GBPS:0.489746
+Performance counter stats for './build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib iouring --oio 128':
+149.79 msec task-clock                #    0.142 CPUs utilized          
+1,008      context-switches          #    0.007 M/sec                  
+0      cpu-migrations            #    0.000 K/sec                  
+306      page-faults               #    0.002 M/sec                  
+58,19,26,878      cycles                    #    3.885 GHz                    
+35,57,61,685      instructions              #    0.61  insn per cycle         
+6,99,94,320      branches                  #  467.276 M/sec                  
+11,09,377      branch-misses             #    1.58% of all branches        
+1.051876346 seconds time elapsed
+0.004116000 seconds user
+0.160533000 seconds sys
+
+
+IOURING RD RND BLKS_KB:4 OIO:128 OP_CNT:130560 TPUT_GBPS:0.498047
+Performance counter stats for 'sudo ./build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib iouring --oio 128':
+10.67 msec task-clock                #    0.009 CPUs utilized          
+1,029      context-switches          #    0.096 M/sec                  
+1      cpu-migrations            #    0.094 K/sec                  
+304      page-faults               #    0.028 M/sec                  
+3,82,18,575      cycles                    #    3.582 GHz                    
+3,29,05,237      instructions              #    0.86  insn per cycle         
+61,40,576      branches                  #  575.443 M/sec                  
+76,323      branch-misses             #    1.24% of all branches        
+1.226994175 seconds time elapsed
+0.007055000 seconds user
+0.007055000 seconds sys
+
+
+SYNCIO RD RND BLKS_KB:4 OIO:1 OP_CNT:31090 TPUT_GBPS:0.118599
+Performance counter stats for './build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib syncio --oio 128 --vsize 10':
+33.12 msec task-clock                #    0.033 CPUs utilized          
+3,111      context-switches          #    0.094 M/sec                  
+0      cpu-migrations            #    0.000 K/sec                  
+153      page-faults               #    0.005 M/sec                  
+13,61,65,695      cycles                    #    4.111 GHz                    
+18,89,96,404      instructions              #    1.39  insn per cycle         
+3,47,21,509      branches                  # 1048.199 M/sec                  
+5,63,956      branch-misses             #    1.62% of all branches       
+1.002040871 seconds time elapsed
+0.000000000 seconds user
+0.038384000 seconds sys
+
+
+LIBAIO RD RND BLKS_KB:4 OIO:128 OP_CNT:145920 TPUT_GBPS:0.556641
+Performance counter stats for './build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib libaio --oio 128 --vsize 10':
+166.39 msec task-clock                #    0.160 CPUs utilized          
+14,922      context-switches          #    0.090 M/sec                  
+4      cpu-migrations            #    0.024 K/sec                  
+1,429      page-faults               #    0.009 M/sec                  
+68,80,84,429      cycles                    #    4.135 GHz                    
+90,42,19,668      instructions              #    1.31  insn per cycle         
+16,59,13,703      branches                  #  997.149 M/sec                  
+26,93,319      branch-misses             #    1.62% of all branches        
+1.040480787 seconds time elapsed
+0.004617000 seconds user
+0.184714000 seconds sys
+
+
+IOURING RD RND BLKS_KB:4 OIO:128 OP_CNT:148480 TPUT_GBPS:0.566406
+Performance counter stats for './build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib iouring --oio 128 --vsize 10':
+20.27 msec task-clock                #    0.020 CPUs utilized          
+120      context-switches          #    0.006 M/sec                  
+0      cpu-migrations            #    0.000 K/sec                  
+1,424      page-faults               #    0.070 M/sec                  
+7,73,50,135      cycles                    #    3.816 GHz                    
+5,43,54,814      instructions              #    0.70  insn per cycle         
+1,08,64,663      branches                  #  536.055 M/sec                  
+1,05,333      branch-misses             #    0.97% of all branches        
+1.024450699 seconds time elapsed
+0.000000000 seconds user
+0.020359000 seconds sys
+
+
+IOURING RD RND BLKS_KB:4 OIO:128 OP_CNT:148480 TPUT_GBPS:0.566406
+Performance counter stats for 'sudo ./build/benchmark --file /home/dwaraka/test --threads 1 --bsize 4 --op read --mode rand --lib iouring --oio 128 --vsize 10':
+5.32 msec task-clock                #    0.005 CPUs utilized          
+122      context-switches          #    0.023 M/sec                  
+0      cpu-migrations            #    0.000 K/sec                  
+1,423      page-faults               #    0.268 M/sec                  
+1,76,93,846      cycles                    #    3.326 GHz                    
+1,48,08,311      instructions              #    0.84  insn per cycle         
+26,78,071      branches                  #  503.469 M/sec                  
+38,204      branch-misses             #    1.43% of all branches        
+1.151603487 seconds time elapsed
+0.006154000 seconds user
+0.000000000 seconds sys
