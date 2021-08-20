@@ -127,7 +127,7 @@ Result_t syncio(const RuntimeArgs_t &args)
         results = (args.vec_size > 0) ? _syncio_vectored(args) : _syncio(args);
         break;
     case STRESS:
-        /* code */
+        results = _syncio_stress(args);
         break;
     case POLL:
         /* code */
