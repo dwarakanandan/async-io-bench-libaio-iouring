@@ -488,7 +488,7 @@ Result_t _async_liburing_stress(const RuntimeArgs_t &args)
             /* Pre-calculate next set of offsets */
             for (int i = 0; i < args.oio; i++)
             {
-                offsets[i] = getOffset(args.max_offset, benchmark_offset, buffer_size, ops_submitted + i, isRand);
+                offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted + i, isRand);
             }
 
             /* Wait for args.oio IO requests to complete */
