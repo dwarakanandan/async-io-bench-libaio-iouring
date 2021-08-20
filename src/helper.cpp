@@ -16,10 +16,9 @@ void printStats(const RuntimeArgs_t &args, const Result_t results)
 void printIterationStats(const RuntimeArgs_t &args, uint64_t iteration, const Result_t results)
 {
     std::stringstream stats;
-    stats << "TID:" << args.thread_id
-          << " iteration:" << iteration
-          << " ops:" << results.op_count
-          << " throughput:" << results.throughput << " GB/s" << endl;
+    stats << iteration
+          << " " << results.op_count
+          << " " << results.throughput << endl;
     cout << stats.str();
 }
 

@@ -82,8 +82,7 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
     char *buffer = (char *)aligned_alloc(1024, buffer_size);
     memset(buffer, '0', buffer_size);
 
-    double start_benchmark = getTime();
-    while (getTime() - start_benchmark < args.runtime)
+    while (benchmark_iteration <= args.runtime)
     {
         ops_submitted = 0;
         ops_returned = 0;
