@@ -414,6 +414,122 @@ Result_t _async_liburing_fixed_buffer_sqe_polling(const RuntimeArgs_t &args)
     return results;
 }
 
+Result_t _async_liburing_stress(const RuntimeArgs_t &args)
+{
+    uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
+    int benchmark_iteration = 0;
+    double benchmark_throughput = 0;
+    uint64_t benchmark_opcount = 0;
+    size_t buffer_size = 1024 * args.blk_size;
+    bool isRead = (args.operation == READ);
+    bool isRand = (args.opmode == RANDOM);
+
+    struct io_uring ring;
+    struct io_uring_sqe *sqe;
+    struct io_uring_cqe *cqe;
+    struct iovec *iovecs;
+    off_t offsets[args.oio];
+    char *buffer[args.oio];
+    int ret;
+
+    /* Initialize io_uring */
+    ret = io_uring_queue_init(1024, &ring, 0);
+    if (ret < 0)
+    {
+        perror(getErrorMessageWithTid(args, "io_uring_queue_init"));
+        return return_error();
+    }
+
+    /* Initialize and Register buffers */
+    iovecs = (iovec *)calloc(args.oio, sizeof(struct iovec));
+    for (int i = 0; i < args.oio; i++)
+    {
+        buffer[i] = (char *)aligned_alloc(1024, buffer_size);
+        memset(buffer[i], '0', buffer_size);
+        iovecs[i].iov_base = buffer[i];
+        iovecs[i].iov_len = buffer_size;
+    }
+
+    ret = io_uring_register_buffers(&ring, iovecs, args.oio);
+    if (ret)
+    {
+        fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
+        return return_error();
+    }
+
+    /* Pre-calculate first set of offsets */
+    for (int i = 0; i < args.oio; i++)
+    {
+        offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, i, isRand);
+    }
+
+    while (benchmark_iteration < args.runtime)
+    {
+        ops_submitted = 0;
+        ops_returned = 0;
+        ops_failed = 0;
+
+        double start_iteration = getTime();
+        while (getTime() - start_iteration < 1)
+        {
+            for (int i = 0; i < args.oio; i++)
+            {
+                /* Get a Submission Queue Entry */
+                sqe = io_uring_get_sqe(&ring);
+                isRead ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i) : io_uring_prep_write_fixed(sqe, args.fd, iovecs[i].iov_base, buffer_size, offsets[i], i);
+            }
+
+            /* Submit args.oio operations */
+            ret = io_uring_submit(&ring);
+            ops_submitted += args.oio;
+
+            /* Pre-calculate next set of offsets */
+            for (int i = 0; i < args.oio; i++)
+            {
+                offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted + i, isRand);
+            }
+
+            /* Wait for args.oio IO requests to complete */
+            ret = io_uring_wait_cqe_nr(&ring, &cqe, args.oio);
+            if (ret < 0)
+            {
+                fprintf(stderr, "Error io_uring_wait_cqe_nr: %s\n", strerror(-ret));
+                return return_error();
+            }
+            size_t head = 0;
+            io_uring_for_each_cqe(&ring, head, cqe)
+            {
+                /* Check completion event result code */
+                if (cqe->res < 0)
+                {
+                    ops_failed++;
+                }
+            }
+            io_uring_cq_advance(&ring, args.oio);
+
+            ops_returned += args.oio;
+        }
+
+        Result_t iteration_results;
+        iteration_results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, 1);
+        iteration_results.op_count = ops_returned - ops_failed;
+        benchmark_throughput += iteration_results.throughput;
+        benchmark_opcount += iteration_results.op_count;
+
+        printIterationStats(args, benchmark_iteration, iteration_results);
+        benchmark_iteration++;
+    }
+
+    /* Cleanup io_uring */
+    io_uring_queue_exit(&ring);
+
+    Result_t results;
+    results.throughput = benchmark_throughput / args.runtime;
+    results.op_count = benchmark_opcount / args.runtime;
+
+    return results;
+}
+
 Result_t async_liburing(const RuntimeArgs_t &args)
 {
     Result_t results;
@@ -437,7 +553,7 @@ Result_t async_liburing(const RuntimeArgs_t &args)
         }
         break;
     case STRESS:
-        /* code */
+        results = _async_liburing_stress(args);
         break;
     case POLL:
         /* code */
