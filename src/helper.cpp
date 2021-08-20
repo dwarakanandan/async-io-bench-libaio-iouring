@@ -13,7 +13,7 @@ void printStats(const RuntimeArgs_t &args, const Result_t results)
     cout << stats.str();
 }
 
-void printIterationStats(const RuntimeArgs_t &args, uint64_t iteration, const Result_t results)
+void printIterationStats(const RuntimeArgs_t &args, int iteration, const Result_t results)
 {
     std::stringstream stats;
     stats << iteration

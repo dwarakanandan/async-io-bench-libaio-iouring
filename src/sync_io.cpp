@@ -72,7 +72,7 @@ Result_t _syncio_vectored(const RuntimeArgs_t &args)
 Result_t _syncio_stress(const RuntimeArgs_t &args)
 {
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
-    uint64_t benchmark_iteration = 1;
+    int benchmark_iteration = 1;
     double benchmark_throughput = 0;
     uint64_t benchmark_opcount = 0;
     size_t buffer_size = 1024 * args.blk_size;
@@ -101,7 +101,7 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
         }
 
         Result_t iteration_results;
-        iteration_results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, args.runtime);
+        iteration_results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, 1);
         iteration_results.op_count = ops_returned - ops_failed;
         benchmark_throughput += iteration_results.throughput;
         benchmark_opcount += iteration_results.op_count;

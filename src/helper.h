@@ -80,7 +80,7 @@ void printStats(const RuntimeArgs_t &args, const Result_t results);
 
 void printOpStats(const RuntimeArgs_t &args, const Result_t results);
 
-void printIterationStats(const RuntimeArgs_t &args, uint64_t iteration, const Result_t results);
+void printIterationStats(const RuntimeArgs_t &args, int iteration, const Result_t results);
 
 const char *getErrorMessageWithTid(const RuntimeArgs_t &args, std::string error);
 
