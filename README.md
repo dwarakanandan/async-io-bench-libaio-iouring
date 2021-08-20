@@ -89,7 +89,7 @@ benchmark --file <file_name>
 ![iouring-vectored-odirect](benchmarks/iouring-vectored-odirect.png)
 <br />
 
-**SLC Cache stress SEQ WRITE 100 sec:**
-![slc-stress-seq-write](benchmarks/slc-stress-seq-write.png)
+**SLC Cache stress SEQ READ/WRITE 100 sec:**
+![slc-seq-stress](benchmarks/slc-seq-stress.png)
 <br />
 
