@@ -214,6 +214,7 @@ Result_t _async_libaio_stress(const RuntimeArgs_t &args)
     int benchmark_iteration = 0;
     double benchmark_throughput = 0;
     uint64_t benchmark_opcount = 0;
+    off_t benchmark_offset = 0;
     size_t buffer_size = 1024 * args.blk_size;
     bool isRead = (args.operation == READ);
     bool isRand = (args.opmode == RANDOM);
@@ -255,6 +256,7 @@ Result_t _async_libaio_stress(const RuntimeArgs_t &args)
         ops_submitted = 0;
         ops_returned = 0;
         ops_failed = 0;
+        benchmark_offset = offsets[args.oio - 1];
 
         double start_iteration = getTime();
         while (getTime() - start_iteration < 1)
@@ -278,7 +280,7 @@ Result_t _async_libaio_stress(const RuntimeArgs_t &args)
             /* Pre-calculate next set of offsets */
             for (int i = 0; i < args.oio; i++)
             {
-                offsets[i] = getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted + i, isRand);
+                offsets[i] = getOffset(args.max_offset, benchmark_offset, buffer_size, ops_submitted + i, isRand);
             }
 
             /* Wait for args.oio requests to complete */

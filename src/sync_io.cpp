@@ -75,6 +75,7 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
     int benchmark_iteration = 0;
     double benchmark_throughput = 0;
     uint64_t benchmark_opcount = 0;
+    off_t benchmark_offset = 0;
     size_t buffer_size = 1024 * args.blk_size;
     bool isRead = (args.operation == READ);
     bool isRand = (args.opmode == RANDOM);
@@ -91,7 +92,7 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
         double start_iteration = getTime();
         while (getTime() - start_iteration < 1)
         {
-            ssize_t opCount = isRead ? pread(args.fd, buffer, buffer_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand)) : pwrite(args.fd, buffer, buffer_size, getOffset(args.max_offset, args.read_offset, buffer_size, ops_submitted, isRand));
+            ssize_t opCount = isRead ? pread(args.fd, buffer, buffer_size, getOffset(args.max_offset, benchmark_offset, buffer_size, ops_submitted, isRand)) : pwrite(args.fd, buffer, buffer_size, getOffset(args.max_offset, benchmark_offset, buffer_size, ops_submitted, isRand));
             ops_submitted++;
             if (opCount < 0)
             {
@@ -99,7 +100,8 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
             }
             ops_returned++;
         }
-
+        benchmark_offset = getOffset(args.max_offset, benchmark_offset, buffer_size, ops_submitted, isRand);
+        
         Result_t iteration_results;
         iteration_results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, 1);
         iteration_results.op_count = ops_returned - ops_failed;
