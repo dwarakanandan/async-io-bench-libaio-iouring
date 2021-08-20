@@ -33,6 +33,13 @@ enum LIB
     IOURING
 };
 
+enum BENCHMARK_TYPE
+{
+    NORMAL,
+    STRESS,
+    POLL
+};
+
 struct RuntimeArgs_t
 {
     std::string filename;
@@ -50,6 +57,7 @@ struct RuntimeArgs_t
     OPERATION operation;
     OPMODE opmode;
     LIB lib;
+    BENCHMARK_TYPE benchmark_type;
 };
 
 struct Result_t

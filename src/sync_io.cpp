@@ -71,7 +71,22 @@ Result_t _syncio_vectored(const RuntimeArgs_t &args)
 
 Result_t syncio(const RuntimeArgs_t &args)
 {
-    Result_t results = (args.vec_size > 0) ? _syncio_vectored(args) : _syncio(args);
+    Result_t results;
+    switch (args.benchmark_type)
+    {
+    case NORMAL:
+        results = (args.vec_size > 0) ? _syncio_vectored(args) : _syncio(args);
+        break;
+    case STRESS:
+        /* code */
+        break;
+    case POLL:
+        /* code */
+        break;
+    default:
+        break;
+    }
+
     if (args.debugInfo)
         printOpStats(args, results);
     return results;

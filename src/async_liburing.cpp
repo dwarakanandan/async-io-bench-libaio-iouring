@@ -417,20 +417,33 @@ Result_t _async_liburing_fixed_buffer_sqe_polling(const RuntimeArgs_t &args)
 Result_t async_liburing(const RuntimeArgs_t &args)
 {
     Result_t results;
-    if (geteuid() == 0)
+    switch (args.benchmark_type)
     {
-        /* SQE kernel polling only possible with root access */
-        if (args.debugInfo)
+    case NORMAL:
+        if (geteuid() == 0)
         {
-            std::stringstream msg;
-            msg << "TID:" << args.thread_id << " SQE kernel polling enabled" << endl;
-            cout << msg.str();
+            /* SQE kernel polling only possible with root access */
+            if (args.debugInfo)
+            {
+                std::stringstream msg;
+                msg << "TID:" << args.thread_id << " SQE kernel polling enabled" << endl;
+                cout << msg.str();
+            }
+            results = (args.vec_size > 0) ? _async_liburing_vectored_sqe_polling(args) : _async_liburing_fixed_buffer_sqe_polling(args);
         }
-        results = (args.vec_size > 0) ? _async_liburing_vectored_sqe_polling(args) : _async_liburing_fixed_buffer_sqe_polling(args);
-    }
-    else
-    {
-        results = (args.vec_size > 0) ? _async_liburing_vectored(args) : _async_liburing_fixed_buffer(args);
+        else
+        {
+            results = (args.vec_size > 0) ? _async_liburing_vectored(args) : _async_liburing_fixed_buffer(args);
+        }
+        break;
+    case STRESS:
+        /* code */
+        break;
+    case POLL:
+        /* code */
+        break;
+    default:
+        break;
     }
 
     if (args.debugInfo)
