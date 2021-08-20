@@ -16,9 +16,7 @@ void printStats(const RuntimeArgs_t &args, const Result_t results)
 void printIterationStats(const RuntimeArgs_t &args, int iteration, const Result_t results)
 {
     std::stringstream stats;
-    stats << iteration
-          << " " << results.op_count
-          << " " << results.throughput << endl;
+    stats << results.throughput << endl;
     cout << stats.str();
 }
 
