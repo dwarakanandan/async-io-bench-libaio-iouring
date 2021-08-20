@@ -72,7 +72,7 @@ Result_t _syncio_vectored(const RuntimeArgs_t &args)
 Result_t _syncio_stress(const RuntimeArgs_t &args)
 {
     uint64_t ops_submitted = 0, ops_returned = 0, ops_failed = 0;
-    int benchmark_iteration = 1;
+    int benchmark_iteration = 0;
     double benchmark_throughput = 0;
     uint64_t benchmark_opcount = 0;
     size_t buffer_size = 1024 * args.blk_size;
@@ -82,7 +82,7 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
     char *buffer = (char *)aligned_alloc(1024, buffer_size);
     memset(buffer, '0', buffer_size);
 
-    while (benchmark_iteration <= args.runtime)
+    while (benchmark_iteration < args.runtime)
     {
         ops_submitted = 0;
         ops_returned = 0;
