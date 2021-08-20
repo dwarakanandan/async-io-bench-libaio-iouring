@@ -112,8 +112,8 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
     }
 
     Result_t results;
-    results.throughput = benchmark_throughput / benchmark_iteration;
-    results.op_count = benchmark_opcount / benchmark_iteration;
+    results.throughput = benchmark_throughput / args.runtime;
+    results.op_count = benchmark_opcount / args.runtime;
 
     return results;
 }
