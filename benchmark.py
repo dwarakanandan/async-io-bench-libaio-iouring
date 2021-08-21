@@ -185,7 +185,7 @@ def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
         tputs = []
         opcounts = []
         for i in range(0, 10):
-            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib+ ' --minterval ' + str(1) + ' --btype msg')
+            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(oio) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib+ ' --minterval ' + str(1) + ' --btype msg --nodirect')
             split = stream.readline().strip().split(' ')
             for s in split:
                 if s.startswith('TPUT_GBPS'):
