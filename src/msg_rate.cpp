@@ -84,12 +84,13 @@ void _io_request_handler(WorkQueue &work_queue)
     struct iovec *iovecs;
     size_t buffer_size;
     int runtime;
+    RuntimeArgs_t args;
 
     while (true)
     {
         IO_request_t io_request = work_queue.wait_and_pop();
-        buffer_size = 1024 * io_request.args.blk_size;
-        runtime = io_request.args.runtime;
+        args = io_request.args;
+        buffer_size = 1024 * args.blk_size;
         outstanding_requests++;
         if (io_request.offset == -1)
             break;
@@ -103,10 +104,10 @@ void _io_request_handler(WorkQueue &work_queue)
                 return;
             }
             /* Initialize and Register buffers */
-            char *buffer[io_request.args.oio];
+            char *buffer[args.oio];
 
-            iovecs = (iovec *)calloc(io_request.args.oio, sizeof(struct iovec));
-            for (int i = 0; i < io_request.args.oio; i++)
+            iovecs = (iovec *)calloc(args.oio, sizeof(struct iovec));
+            for (int i = 0; i < args.oio; i++)
             {
                 buffer[i] = (char *)aligned_alloc(1024, buffer_size);
                 memset(buffer[i], '0', buffer_size);
@@ -114,26 +115,26 @@ void _io_request_handler(WorkQueue &work_queue)
                 iovecs[i].iov_len = buffer_size;
             }
 
-            ret = io_uring_register_buffers(&ring, iovecs, io_request.args.oio);
+            ret = io_uring_register_buffers(&ring, iovecs, args.oio);
             if (ret)
             {
                 fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
                 return;
             }
         }
-        switch (io_request.args.lib)
+        switch (args.lib)
         {
         case SYNCIO:
             break;
         case LIBAIO:
             break;
         case IOURING:
-            bool isRead = (io_request.args.operation == READ);
+            bool isRead = (args.operation == READ);
             struct io_uring_sqe *sqe;
             sqe = io_uring_get_sqe(&ring);
-            int submit_index = outstanding_requests -1;
-            isRead ? io_uring_prep_read_fixed(sqe, io_request.args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index) : io_uring_prep_write_fixed(sqe, io_request.args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index);
-            if (outstanding_requests == io_request.args.oio)
+            int submit_index = outstanding_requests - 1;
+            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index) : io_uring_prep_write_fixed(sqe, args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index);
+            if (outstanding_requests == args.oio)
             {
                 struct io_uring_cqe *cqe;
                 int ret = io_uring_submit(&ring);
@@ -158,15 +159,19 @@ void _io_request_handler(WorkQueue &work_queue)
             }
             break;
         }
-        if (outstanding_requests == io_request.args.oio)
+        if (outstanding_requests == args.oio)
             outstanding_requests = 0;
         total_requests_handled++;
     }
-    Result_t results;
-    results.throughput = calculateThroughputGbps(total_requests_handled, buffer_size, runtime);
-    results.op_count = total_requests_handled;
-        std::cout << "OP_CNT:" << results.op_count << " "
-         << "TPUT_GBPS:" << results.throughput << std::endl;
+
+    std::cout << std::fixed
+              << libToString(args.lib) << " "
+              << operationToString(args.operation) << " "
+              << opmodeToString(args.opmode) << " "
+              << "BLKS_KB:" << args.blk_size << " "
+              << "OIO:" << ((args.lib == SYNCIO) ? 1 : args.oio) << " "
+              << "OP_CNT:" << total_requests_handled << " "
+              << "TPUT_GBPS:" << calculateThroughputGbps(total_requests_handled, buffer_size, args.runtime) << std::endl;
 }
 
 void runMessageRateBenchmark(RuntimeArgs_t &args)

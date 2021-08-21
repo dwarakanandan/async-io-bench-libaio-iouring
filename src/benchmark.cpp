@@ -148,14 +148,12 @@ void runBenchmark(RuntimeArgs_t &userArgs, Result_t (*benchmarkFunction)(const R
         totalOps += results.op_count;
     }
 
-    int oioPrint = (userArgs.lib == SYNCIO) ? 1 : userArgs.oio;
-
     cout << std::fixed
          << libToString(userArgs.lib) << " "
          << operationToString(userArgs.operation) << " "
          << opmodeToString(userArgs.opmode) << " "
          << "BLKS_KB:" << userArgs.blk_size << " "
-         << "OIO:" << oioPrint << " "
+         << "OIO:" << ((userArgs.lib == SYNCIO) ? 1 : userArgs.oio) << " "
          << "OP_CNT:" << totalOps << " "
          << "TPUT_GBPS:" << totalThroughput << endl;
 }
@@ -196,7 +194,8 @@ int main(int argc, char const *argv[])
 
     args.max_offset = getFileSize(args.fd);
 
-    if (args.benchmark_type == MSG_RATE) {
+    if (args.benchmark_type == MSG_RATE)
+    {
         runMessageRateBenchmark(args);
         return 0;
     }
