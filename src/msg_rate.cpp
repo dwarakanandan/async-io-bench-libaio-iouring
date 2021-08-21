@@ -73,7 +73,7 @@ void _io_request_producer(WorkQueue &work_queue, const RuntimeArgs_t &args)
         work_queue.push_work(io_request);
         if (args.message_interval != 0)
         {
-            std::this_thread::sleep_for(std::chrono::nanoseconds(args.message_interval));
+            std::this_thread::sleep_for(std::chrono::microseconds(args.message_interval));
         }
     }
 }

@@ -56,9 +56,10 @@ benchmark --file <file_name>
         --lib <syncio|libaio|liburing>
         --oio <outstanding_io_count>
         --vsize <vectored IO batch size>
-        --runtime <runtime seconds>
+        --runtime <runtime in seconds>
         --nodirect (disable O_DIRECT)
         --btype <normal|stress|msg>
+        --minterval <message interval in micro seconds>
         --debug (show_debug)
 ```
 <br />
