@@ -146,7 +146,7 @@ void _io_request_handler(WorkQueue &work_queue)
                     /* Check completion event result code */
                     if (cqe->res < 0)
                     {
-                        fprintf(stderr, "IO request failed: %s\n", strerror(cqe->res));
+                        fprintf(stderr, "IO request failed: %s\n", strerror(-(cqe->res)));
                         return;
                     }
                 }
