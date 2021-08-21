@@ -2,6 +2,7 @@
 #include "sync_io.h"
 #include "async_libaio.h"
 #include "async_liburing.h"
+#include "msg_rate.h"
 
 #include <future>
 #include <vector>
@@ -33,7 +34,7 @@ void fileNameCheck(int argc, char const *argv[])
             << "--vsize <vectored IO batch size> "
             << "--runtime <runtime seconds> "
             << "--nodirect (disable O_DIRECT) "
-            << "--btype <normal|stress|poll> "
+            << "--btype <normal|stress|msg> "
             << "--debug (show_debug) " << endl;
 
     if (!hasFileName)
@@ -111,7 +112,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[])
         }
         if (strcmp(argv[i], "--btype") == 0)
         {
-            args.benchmark_type = strcmp(argv[i + 1], "stress") == 0 ? STRESS : (strcmp(argv[i + 1], "poll") == 0 ? POLL : NORMAL);
+            args.benchmark_type = strcmp(argv[i + 1], "stress") == 0 ? STRESS : (strcmp(argv[i + 1], "msg") == 0 ? MSG_RATE : NORMAL);
         }
     }
     return args;
@@ -194,6 +195,11 @@ int main(int argc, char const *argv[])
     fileOpen(&args);
 
     args.max_offset = getFileSize(args.fd);
+
+    if (args.benchmark_type == MSG_RATE) {
+        runMessageRateBenchmark(args);
+        return 0;
+    }
 
     switch (args.lib)
     {

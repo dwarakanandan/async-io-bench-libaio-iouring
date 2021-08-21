@@ -339,9 +339,6 @@ Result_t async_libaio(const RuntimeArgs_t &args)
     case STRESS:
         results = _async_libaio_stress(args);
         break;
-    case POLL:
-        /* code */
-        break;
     default:
         break;
     }

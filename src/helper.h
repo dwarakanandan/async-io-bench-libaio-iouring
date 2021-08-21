@@ -37,7 +37,7 @@ enum BENCHMARK_TYPE
 {
     NORMAL,
     STRESS,
-    POLL
+    MSG_RATE
 };
 
 struct RuntimeArgs_t

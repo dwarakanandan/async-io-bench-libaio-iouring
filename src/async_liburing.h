@@ -1,3 +1,5 @@
+#pragma once
+
 #include "helper.h"
 
 #include <liburing.h>

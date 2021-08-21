@@ -557,9 +557,6 @@ Result_t async_liburing(const RuntimeArgs_t &args)
     case STRESS:
         results = _async_liburing_stress(args);
         break;
-    case POLL:
-        /* code */
-        break;
     default:
         break;
     }

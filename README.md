@@ -58,7 +58,7 @@ benchmark --file <file_name>
         --vsize <vectored IO batch size>
         --runtime <runtime seconds>
         --nodirect (disable O_DIRECT)
-        --btype <normal|stress|poll>
+        --btype <normal|stress|msg>
         --debug (show_debug)
 ```
 <br />

@@ -101,7 +101,7 @@ Result_t _syncio_stress(const RuntimeArgs_t &args)
             ops_returned++;
         }
         benchmark_offset = getOffset(args.max_offset, benchmark_offset, buffer_size, ops_submitted, isRand);
-        
+
         Result_t iteration_results;
         iteration_results.throughput = calculateThroughputGbps(ops_returned - ops_failed, buffer_size, 1);
         iteration_results.op_count = ops_returned - ops_failed;
@@ -129,9 +129,6 @@ Result_t syncio(const RuntimeArgs_t &args)
         break;
     case STRESS:
         results = _syncio_stress(args);
-        break;
-    case POLL:
-        /* code */
         break;
     default:
         break;
