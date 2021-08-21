@@ -94,3 +94,10 @@ benchmark --file <file_name>
 ![slc-seq-stress](benchmarks/slc-seq-stress.png)
 <br />
 
+**IO Request interval 1 microseconds at varying outstanding IO size:**
+![io-request-interval-oio](benchmarks/io-request-interval-oio.png)
+<br />
+
+**Optimal IO Request interval:**
+![optimal-io-request-interval](benchmarks/optimal-io-request-interval.png)
+<br />
