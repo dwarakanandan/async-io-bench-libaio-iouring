@@ -87,8 +87,7 @@ void _io_request_handler(WorkQueue &work_queue)
     size_t buffer_size;
     RuntimeArgs_t args;
 
-    char *buffer = (char *)aligned_alloc(1024, buffer_size);
-    memset(buffer, '0', buffer_size);
+    char *buffer;
 
     while (true)
     {
@@ -128,11 +127,23 @@ void _io_request_handler(WorkQueue &work_queue)
                     return;
                 }
             }
+            if (args.lib == SYNCIO)
+            {
+                buffer = (char *)aligned_alloc(1024, buffer_size);
+                memset(buffer, '0', buffer_size);
+            }
         }
         switch (args.lib)
         {
         case SYNCIO:
-            (args.operation == READ) ? pread(args.fd, buffer, buffer_size, io_request.offset) : pwrite(args.fd, buffer, buffer_size, io_request.offset);
+            size_t ret = (args.operation == READ) ? pread(args.fd, buffer, buffer_size, io_request.offset) : pwrite(args.fd, buffer, buffer_size, io_request.offset);
+            if (ret < 0)
+            {
+                fprintf(stderr, "IO request failed: %s\n", strerror(-ret));
+                return;
+            }
+            break;
+        case LIBAIO:
             break;
         case IOURING:
             struct io_uring_sqe *sqe;
