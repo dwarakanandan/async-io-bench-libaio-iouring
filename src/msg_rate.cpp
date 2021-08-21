@@ -90,7 +90,8 @@ void _io_request_handler(WorkQueue &work_queue)
 
     char *buffer;
 
-    while (true)
+    double start = getTime();
+    while (getTime() - start < args.runtime)
     {
         IO_request_t io_request = work_queue.wait_and_pop();
         args = io_request.args;
