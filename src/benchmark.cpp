@@ -118,7 +118,7 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[])
         }
         if (strcmp(argv[i], "--minterval") == 0)
         {
-            args.runtime = atoi(argv[i + 1]);
+            args.message_interval = atoi(argv[i + 1]);
         }
     }
     return args;
