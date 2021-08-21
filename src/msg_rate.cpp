@@ -72,7 +72,7 @@ void _io_request_producer(WorkQueue &work_queue, const RuntimeArgs_t &args)
         io_request.args = args;
         io_request.offset = getOffset(args.max_offset, args.read_offset, buffer_size, iter++, true);
         work_queue.push_work(io_request);
-        std::this_thread::sleep_for(1ms);
+        std::this_thread::sleep_for(1us);
     }
 }
 
