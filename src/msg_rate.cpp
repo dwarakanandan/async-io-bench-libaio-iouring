@@ -86,6 +86,7 @@ void _io_request_handler(WorkQueue &work_queue)
     struct iovec *iovecs;
     size_t buffer_size;
     RuntimeArgs_t args;
+    ssize_t rval;
 
     char *buffer;
 
@@ -136,10 +137,10 @@ void _io_request_handler(WorkQueue &work_queue)
         switch (args.lib)
         {
         case SYNCIO:
-            size_t ret = (args.operation == READ) ? pread(args.fd, buffer, buffer_size, io_request.offset) : pwrite(args.fd, buffer, buffer_size, io_request.offset);
-            if (ret < 0)
+            rval = (args.operation == READ) ? pread(args.fd, buffer, buffer_size, io_request.offset) : pwrite(args.fd, buffer, buffer_size, io_request.offset);
+            if (rval < 0)
             {
-                fprintf(stderr, "IO request failed: %s\n", strerror(-ret));
+                fprintf(stderr, "IO request failed: %s\n", strerror(-rval));
                 return;
             }
             break;
