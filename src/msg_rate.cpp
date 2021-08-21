@@ -162,9 +162,11 @@ void _io_request_handler(WorkQueue &work_queue)
             outstanding_requests = 0;
         total_requests_handled++;
     }
-    double throughput = calculateThroughputGbps(total_requests_handled, buffer_size, runtime);
-    std::cout << total_requests_handled << std::endl;
-    std::cout << "Quitting request handler" << std::endl;
+    Result_t results;
+    results.throughput = calculateThroughputGbps(total_requests_handled, buffer_size, runtime);
+    results.op_count = total_requests_handled;
+        std::cout << "OP_CNT:" << results.op_count << " "
+         << "TPUT_GBPS:" << results.throughput << std::endl;
 }
 
 void runMessageRateBenchmark(RuntimeArgs_t &args)
