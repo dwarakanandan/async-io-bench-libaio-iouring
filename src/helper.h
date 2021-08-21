@@ -50,6 +50,7 @@ struct RuntimeArgs_t
     int oio;
     int vec_size;
     int runtime;
+    int message_interval;
     off_t read_offset;
     off_t max_offset;
     bool debugInfo;

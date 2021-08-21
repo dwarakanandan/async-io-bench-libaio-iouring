@@ -35,6 +35,7 @@ void fileNameCheck(int argc, char const *argv[])
             << "--runtime <runtime seconds> "
             << "--nodirect (disable O_DIRECT) "
             << "--btype <normal|stress|msg> "
+            << "--minterval <message interval in nano seconds> "
             << "--debug (show_debug) " << endl;
 
     if (!hasFileName)
@@ -58,6 +59,7 @@ RuntimeArgs_t getDefaultArgs()
     args.vec_size = 0;
     args.runtime = 1;
     args.benchmark_type = NORMAL;
+    args.message_interval = 1000;
     return args;
 }
 
@@ -113,6 +115,10 @@ RuntimeArgs_t mapUserArgsToRuntimeArgs(int argc, char const *argv[])
         if (strcmp(argv[i], "--btype") == 0)
         {
             args.benchmark_type = strcmp(argv[i + 1], "stress") == 0 ? STRESS : (strcmp(argv[i + 1], "msg") == 0 ? MSG_RATE : NORMAL);
+        }
+        if (strcmp(argv[i], "--minterval") == 0)
+        {
+            args.runtime = atoi(argv[i + 1]);
         }
     }
     return args;

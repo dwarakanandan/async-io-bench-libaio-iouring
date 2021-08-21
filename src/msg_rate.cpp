@@ -64,7 +64,6 @@ void _io_request_producer(WorkQueue &work_queue, const RuntimeArgs_t &args)
 {
     size_t buffer_size = 1024 * args.blk_size;
     uint64_t iter = 0;
-
     double start = getTime();
     while (getTime() - start < args.runtime)
     {
@@ -72,7 +71,7 @@ void _io_request_producer(WorkQueue &work_queue, const RuntimeArgs_t &args)
         io_request.args = args;
         io_request.offset = getOffset(args.max_offset, args.read_offset, buffer_size, iter++, true);
         work_queue.push_work(io_request);
-        std::this_thread::sleep_for(1us);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(args.message_interval));
     }
 }
 
