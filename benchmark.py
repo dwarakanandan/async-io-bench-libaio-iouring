@@ -206,7 +206,7 @@ def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
     print('\n')
 
 def runMsgRateBenchmarkAllMinterval(lib, threads, op, mode, bsize):
-    minterval_sizes = [1000000, 10000000]
+    minterval_sizes = [100, 500, 1000, 5000, 10000, 25000, 50000, 100000, 150000, 200000, 250000, 300000, 500000, 1000000, 10000000]
     print('Running runMsgRateBenchmarkAllMinterval lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     avg_tputs = []
     avg_opcounts = []
@@ -214,7 +214,7 @@ def runMsgRateBenchmarkAllMinterval(lib, threads, op, mode, bsize):
         tputs = []
         opcounts = []
         for i in range(0, 10):
-            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(32) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib+ ' --minterval ' + str(minterval_size) + ' --btype msg --nodirect')
+            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(128) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib+ ' --minterval ' + str(minterval_size) + ' --btype msg --nodirect')
             split = stream.readline().strip().split(' ')
             for s in split:
                 if s.startswith('TPUT_GBPS'):
@@ -269,5 +269,4 @@ def runMsgRateBenchmarkAllMinterval(lib, threads, op, mode, bsize):
 
 # runMsgRateBenchmarkAllOios('iouring', 1, 'read', 'rand', 256)
 
-runMsgRateBenchmarkAllMinterval('syncio', 1, 'read', 'rand', 256)
 runMsgRateBenchmarkAllMinterval('iouring', 1, 'read', 'rand', 256)
