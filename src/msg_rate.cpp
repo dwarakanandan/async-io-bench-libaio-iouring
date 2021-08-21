@@ -83,7 +83,6 @@ void _io_request_handler(WorkQueue &work_queue)
     io_uring ring;
     struct iovec *iovecs;
     size_t buffer_size;
-    int runtime;
     RuntimeArgs_t args;
 
     while (true)
