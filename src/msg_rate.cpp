@@ -82,10 +82,14 @@ void _io_request_handler(WorkQueue &work_queue)
     int outstanding_requests = 0;
     io_uring ring;
     struct iovec *iovecs;
+    size_t buffer_size;
+    int runtime;
+
     while (true)
     {
         IO_request_t io_request = work_queue.wait_and_pop();
-        size_t buffer_size = 1024 * io_request.args.blk_size;
+        buffer_size = 1024 * io_request.args.blk_size;
+        runtime = io_request.args.runtime;
         outstanding_requests++;
         if (io_request.offset == -1)
             break;
@@ -158,6 +162,7 @@ void _io_request_handler(WorkQueue &work_queue)
             outstanding_requests = 0;
         total_requests_handled++;
     }
+    double throughput = calculateThroughputGbps(total_requests_handled, buffer_size, runtime);
     std::cout << total_requests_handled << std::endl;
     std::cout << "Quitting request handler" << std::endl;
 }
