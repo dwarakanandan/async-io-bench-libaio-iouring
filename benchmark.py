@@ -206,7 +206,7 @@ def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
     print('\n')
 
 def runMsgRateBenchmarkAllMinterval(lib, threads, op, mode, bsize):
-    minterval_sizes = [1, 5, 10, 50, 100, 250, 500, 1000]
+    minterval_sizes = [100, 500, 1000, 5000, 10000, 25000, 50000, 100000, 150000, 200000, 250000, 300000, 500000]
     print('Running runMsgRateBenchmarkAllMinterval lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     avg_tputs = []
     avg_opcounts = []

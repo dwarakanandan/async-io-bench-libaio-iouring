@@ -59,7 +59,7 @@ benchmark --file <file_name>
         --runtime <runtime in seconds>
         --nodirect (disable O_DIRECT)
         --btype <normal|stress|msg>
-        --minterval <message interval in micro seconds>
+        --minterval <message interval in nano seconds>
         --debug (show_debug)
 ```
 <br />

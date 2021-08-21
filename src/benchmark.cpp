@@ -35,7 +35,7 @@ void fileNameCheck(int argc, char const *argv[])
             << "--runtime <runtime seconds> "
             << "--nodirect (disable O_DIRECT) "
             << "--btype <normal|stress|msg> "
-            << "--minterval <message interval in micro seconds> "
+            << "--minterval <message interval in nano seconds> "
             << "--debug (show_debug) " << endl;
 
     if (!hasFileName)
