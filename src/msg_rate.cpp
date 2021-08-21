@@ -87,6 +87,9 @@ void _io_request_handler(WorkQueue &work_queue)
     size_t buffer_size;
     RuntimeArgs_t args;
 
+    char *buffer = (char *)aligned_alloc(1024, buffer_size);
+    memset(buffer, '0', buffer_size);
+
     while (true)
     {
         IO_request_t io_request = work_queue.wait_and_pop();
@@ -98,43 +101,44 @@ void _io_request_handler(WorkQueue &work_queue)
 
         if (total_requests_handled == 0)
         {
-            int ret = io_uring_queue_init(1024, &ring, 0);
-            if (ret < 0)
+            if (args.lib == IOURING)
             {
-                perror("io_uring_queue_init");
-                return;
-            }
-            /* Initialize and Register buffers */
-            char *buffer[args.oio];
+                int ret = io_uring_queue_init(1024, &ring, 0);
+                if (ret < 0)
+                {
+                    perror("io_uring_queue_init");
+                    return;
+                }
+                /* Initialize and Register buffers */
+                char *buffer[args.oio];
 
-            iovecs = (iovec *)calloc(args.oio, sizeof(struct iovec));
-            for (int i = 0; i < args.oio; i++)
-            {
-                buffer[i] = (char *)aligned_alloc(1024, buffer_size);
-                memset(buffer[i], '0', buffer_size);
-                iovecs[i].iov_base = buffer[i];
-                iovecs[i].iov_len = buffer_size;
-            }
+                iovecs = (iovec *)calloc(args.oio, sizeof(struct iovec));
+                for (int i = 0; i < args.oio; i++)
+                {
+                    buffer[i] = (char *)aligned_alloc(1024, buffer_size);
+                    memset(buffer[i], '0', buffer_size);
+                    iovecs[i].iov_base = buffer[i];
+                    iovecs[i].iov_len = buffer_size;
+                }
 
-            ret = io_uring_register_buffers(&ring, iovecs, args.oio);
-            if (ret)
-            {
-                fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
-                return;
+                ret = io_uring_register_buffers(&ring, iovecs, args.oio);
+                if (ret)
+                {
+                    fprintf(stderr, "Error registering buffers: %s\n", strerror(-ret));
+                    return;
+                }
             }
         }
         switch (args.lib)
         {
         case SYNCIO:
-            break;
-        case LIBAIO:
+            (args.operation == READ) ? pread(args.fd, buffer, buffer_size, io_request.offset) : pwrite(args.fd, buffer, buffer_size, io_request.offset);
             break;
         case IOURING:
-            bool isRead = (args.operation == READ);
             struct io_uring_sqe *sqe;
             sqe = io_uring_get_sqe(&ring);
             int submit_index = outstanding_requests - 1;
-            isRead ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index) : io_uring_prep_write_fixed(sqe, args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index);
+            (args.operation == READ) ? io_uring_prep_read_fixed(sqe, args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index) : io_uring_prep_write_fixed(sqe, args.fd, iovecs[submit_index].iov_base, buffer_size, io_request.offset, submit_index);
             if (outstanding_requests == args.oio)
             {
                 struct io_uring_cqe *cqe;
