@@ -238,4 +238,4 @@ def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
 # runBenchmarkAllThreadsVectored('libaio', 'read', 'rand', 4, 128, 10)
 # runBenchmarkAllThreadsVectored('iouring', 'read', 'rand', 4, 128, 10)
 
-runMsgRateBenchmarkAllOios('iouring', 1, 'READ', 'RAND', 256)
+runMsgRateBenchmarkAllOios('iouring', 1, 'read', 'rand', 256)
