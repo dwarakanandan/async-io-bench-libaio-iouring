@@ -178,7 +178,7 @@ def runBenchmarkAllThreadsVectored(lib, op, mode, bsize, oio, vsize):
 
 def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
     oio_sizes = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
-    print('Running runBenchmarkAllOios lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
+    print('Running runMsgRateBenchmarkAllOios lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
     avg_tputs = []
     avg_opcounts = []
     for oio in oio_sizes:
@@ -196,6 +196,35 @@ def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
         avg_opcounts.append(sum(opcounts)/len(opcounts))
     
     print(oio_sizes)
+    print('TPUT_GBPS average over 10 runs for OIO:')
+    for avg_tput in avg_tputs:
+        print("%.2f" % round(avg_tput, 2))
+    print('\n')
+    print('OP_CNT average over 10 runs for OIO:')
+    for avg_opcount in avg_opcounts:
+        print("%d" % avg_opcount)
+    print('\n')
+
+def runMsgRateBenchmarkAllMinterval(lib, threads, op, mode, bsize):
+    minterval_sizes = [1, 10, 100, 1000, 10000, 100000]
+    print('Running runMsgRateBenchmarkAllMinterval lib:' + lib + ' threads:' + str(threads) + ' op:' + op + ' mode:' + mode + ' bsize:' + str(bsize))
+    avg_tputs = []
+    avg_opcounts = []
+    for minterval_size in minterval_sizes:
+        tputs = []
+        opcounts = []
+        for i in range(0, 10):
+            stream = os.popen(base_command + '--threads ' + str(threads) + ' --bsize ' + str(bsize) + ' --oio ' + str(32) + ' --op ' + op + ' --mode ' + mode + ' --lib ' + lib+ ' --minterval ' + str(minterval_size) + ' --btype msg --nodirect')
+            split = stream.readline().strip().split(' ')
+            for s in split:
+                if s.startswith('TPUT_GBPS'):
+                    tputs.append(float(s.split(':')[1]))
+                if s.startswith('OP_CNT'):
+                    opcounts.append(int(s.split(':')[1]))
+        avg_tputs.append(sum(tputs)/len(tputs))
+        avg_opcounts.append(sum(opcounts)/len(opcounts))
+    
+    print(minterval_sizes)
     print('TPUT_GBPS average over 10 runs for OIO:')
     for avg_tput in avg_tputs:
         print("%.2f" % round(avg_tput, 2))
@@ -238,4 +267,7 @@ def runMsgRateBenchmarkAllOios(lib, threads, op, mode, bsize):
 # runBenchmarkAllThreadsVectored('libaio', 'read', 'rand', 4, 128, 10)
 # runBenchmarkAllThreadsVectored('iouring', 'read', 'rand', 4, 128, 10)
 
-runMsgRateBenchmarkAllOios('iouring', 1, 'read', 'rand', 256)
+# runMsgRateBenchmarkAllOios('iouring', 1, 'read', 'rand', 256)
+
+runMsgRateBenchmarkAllMinterval('syncio', 1, 'read', 'rand', 256)
+runMsgRateBenchmarkAllMinterval('iouring', 1, 'read', 'rand', 256)
