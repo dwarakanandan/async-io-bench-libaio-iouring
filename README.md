@@ -101,3 +101,7 @@ benchmark --file <file_name>
 **Optimal IO Request interval:**
 ![optimal-io-request-interval](benchmarks/optimal-io-request-interval.png)
 <br />
+
+**(Instructions / Byte) for RANDOM READ IO_URING Outstanding IO-128 :**
+![instructions-per-byte](benchmarks/instructions-per-byte.png)
+<br />
